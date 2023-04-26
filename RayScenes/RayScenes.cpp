@@ -3,10 +3,15 @@
 
 #include "RayScenes.h"
 
-using namespace std;
 
 int main()
 {
-	cout << "Hello" << endl;
+	int w;
+	int h;
+	int comp;
+	unsigned char*  image = stbi_load("intput.png", &w, &h, &comp, 0);
+
+	std::cout << "Hello" << std::endl;
+
 	return 0;
 }
