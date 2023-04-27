@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <math.h>
 
 template<int H,int W>
 class Matrix {
@@ -13,6 +14,13 @@ class Matrix {
     Matrix();
 
     Matrix(float t[H * W]);
+
+    template<int P, int M>
+    Matrix(Matrix<P,M> mat){
+        (*this).tab = mat.tab;
+        N = mat.N;
+        M = mat.M;
+    }
 
     ~Matrix();
 
@@ -67,9 +75,9 @@ class Vector {
 
 
     float tab[N];
+    float norme;
 
     public :
-
 
     Vector();
 
@@ -81,28 +89,82 @@ class Vector {
 
     float getAt(int i) const;
 
+    void updateNorme();
+
+    float norm();
+
+    void normalized();
+
     Vector operator+(const Vector& vec) {
         Vector v;
 
         for (int i = 0; i < N; i++)
         {
-            v[i] += vec[i];
+            v[i] = (*this).getAt(i) + vec[i];
         }
+
+
+        v.updateNorme();
+        return v;
+    }
+
+    Vector operator-(const Vector& vec) {
+        Vector v;
+
+        for (int i = 0; i < N; i++)
+        {
+            v[i] = (*this).getAt(i) - vec[i];
+        }
+
+
+        v.updateNorme();
 
         return v;
     }
 
-    float operator()(int i) const {
+    Vector operator*(float s) {
+        Vector v;
+
+        for (int i = 0; i < N; i++)
+        {
+            v[i] = (*this).getAt(i)*s;
+        }
+
+        v.updateNorme();
+        return v;
+    }
+
+    Vector operator-() {
+        Vector v;
+
+        for (int i = 0; i < N; i++)
+        {
+            v[i] = -(*this).getAt(i);
+        }
+
+        v.updateNorme();
+        return v;
+    }
+
+    Vector operator/(float s) {
+        Vector v;
+
+        for (int i = 0; i < N; i++)
+        {
+            v[i] = (*this).getAt(i) / s;
+        }
+
+        v.updateNorme();
+        return v;
+    }
+
+
+    float operator[](int i) const {
         return tab[i];
     }
 
+    float dot(const Vector<N> vec);
+
+
 };
 
-
-class Vector3 : public Vector<3> {
-    public:
-    float* x, y, z;
-
-    
-
-};
