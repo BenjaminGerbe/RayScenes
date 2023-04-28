@@ -32,7 +32,9 @@ int main()
 
 	Matrix4x4 m(f);
 
-	std::cout << m*mat << std::endl;
+	Vector<5> vec;
+
+	std::cout << vec << std::endl;
 
 	return 0;
 }

@@ -165,6 +165,29 @@ class Vector {
 
     float dot(const Vector<N> vec);
 
+    friend std::ostream& operator<<(std::ostream& os, const Vector<N>& vec) {
+        os << "[ ";
+        for (int i = 0; i < N; ++i) {
+           
+            if (i > 0) os << " , ";
+            os << vec[i];
+        }
+        os << " ]";
+        os << std::endl;
+
+        return os;
+    };
 
 };
 
+class Ray {
+    Vector<3> origin;
+    Vector<3> direction;
+
+    public:
+    Ray() {
+        origin = Vector<3>();
+        direction = Vector<3>();
+    }
+
+};
