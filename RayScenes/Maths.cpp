@@ -10,12 +10,58 @@ float* Matrix <H,W>::getTab() const{
 
 template<int H, int W>
 void Matrix <H,W>::setAt(int i, int j, int v) {
+    if (i >= H || j >= W || i < 0 || j < 0) {
+        throw std::exception(" out of bounds");
+    }
     tab[(i * N) + j] = v;
 }
 
 template<int H, int W>
 float Matrix <H,W>::getAt(int i, int j) const{
     return tab[(i * N) + j];
+}
+
+template<int H, int W>
+float Matrix<H, W>::getDet()
+{
+    
+    if (H != W) throw std::exception("la matrix doit être carré");
+
+    if (H == 0) return 1;
+
+    if (H == 1) return getAt(0, 0);
+
+    if (H == 2) {
+        return getAt(0, 0) * getAt(1, 1) - getAt(0, 1) * getAt(1, 0);
+    }
+
+    float result = 0;
+    int signe = 1;
+
+    for (int i = 0; i < H; i++)
+    {
+        Matrix<H - 1, H - 1> temp;
+
+        for (int m = 1; m < H; m++)
+        {
+            int z = 0;
+            for (int n = 0; n < H; n++)
+            {
+                if (n != i) {
+                    temp.setAt(m - 1, z, getAt(n, m));
+                    z++;
+                }
+            }
+        }
+
+        result += signe * getAt(0, i) * temp.getDet();
+        signe = -signe;
+    }
+
+
+
+    return result;
+   
 }
 
 template<int H, int W>
@@ -43,7 +89,7 @@ Matrix <H, W>::Matrix(float t[H * W]) {
 
 template<int H, int W>
 Matrix <H, W>::~Matrix() {
-    
+    delete[] tab;
 }
 
 

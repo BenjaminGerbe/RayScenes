@@ -5,7 +5,7 @@
 template<int H,int W>
 class Matrix {
    
-    float tab[H*W];
+    float* tab = new float[H*W];
     int N = H;
     int M = W;
 
@@ -33,6 +33,8 @@ class Matrix {
     float operator()(int i, int j) const {
         return tab[(i * N) + j];
     }
+
+    float getDet();
 
     template<int O, int P>
     Matrix<H,P> operator*(Matrix<O,P>& m) {
@@ -65,6 +67,25 @@ class Matrix {
 
         return os;
     };
+
+};
+
+template< >
+class Matrix<0,0> {
+
+
+    public:
+    void setAt(int i, int j, int v) {
+        return;
+    }
+
+    float getDet() {
+        return 1;
+    }
+
+    float getAt(int i, int j) {
+        return 0;
+    }
 
 };
 
@@ -180,14 +201,17 @@ class Vector {
 
 };
 
+typedef Vector<3> Vector3;
+
 class Ray {
-    Vector<3> origin;
-    Vector<3> direction;
+    Vector3 origin;
+    Vector3 direction;
 
     public:
     Ray() {
-        origin = Vector<3>();
-        direction = Vector<3>();
+        origin = Vector3();
+        direction = Vector3();
     }
 
 };
+

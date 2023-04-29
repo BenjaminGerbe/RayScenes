@@ -4,6 +4,11 @@
 #include "RayScenes.h"
 
 
+void foo() {
+	Matrix<100,100> mat;
+	std::cout << "";
+}
+
 int main()
 {
 	int w;
@@ -12,7 +17,18 @@ int main()
 	unsigned char*  image = stbi_load("intput.png", &w, &h, &comp, 0);
 
 
-	float* f = new float[16]
+	foo();
+
+	float* f = new float[9]
+	{
+		1, 2, 1,
+		6, 5, 6,
+		4, 8, 9
+	};
+
+	Matrix4x4 mat(f);
+
+	f = new float[16]
 	{
 		1, 2, 3, 4,
 		1, 2, 3, 4,
@@ -20,21 +36,11 @@ int main()
 		1, 2, 3, 4
 	};
 
-	Matrix4x4 mat(f);
-
-	f = new float[16]
-	{
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			1, 2, 3, 4,
-			1, 2, 3, 4
-	};
-
 	Matrix4x4 m(f);
 
 	Vector<5> vec;
 
-	std::cout << vec << std::endl;
+	std::cout << mat.getDet() << std::endl;
 
 	return 0;
 }
