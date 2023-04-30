@@ -21,12 +21,12 @@ int main()
 
 	float* f = new float[9]
 	{
-		1, 2, 1,
-		6, 5, 6,
-		4, 8, 9
+		1, 2, 3,
+		4, 5, 6,
+		7, 8, 9
 	};
 
-	Matrix4x4 mat(f);
+	Matrix < 3,3 > mat(f);
 
 	f = new float[16]
 	{
@@ -40,7 +40,8 @@ int main()
 
 	Vector<5> vec;
 
-	std::cout << mat.getDet() << std::endl;
+	std::cout << mat << std::endl;
+	std::cout << mat.subMatrix(0, 2, 3) << std::endl;
 
 	return 0;
 }

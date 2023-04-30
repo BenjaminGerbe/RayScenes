@@ -9,7 +9,11 @@ class Matrix {
     int N = H;
     int M = W;
 
+  
+
     public:
+
+    Matrix subMatrix(int p, int q, int n);
 
     Matrix();
 

@@ -22,6 +22,38 @@ float Matrix <H,W>::getAt(int i, int j) const{
 }
 
 template<int H, int W>
+Matrix < H,W > Matrix<H, W>::subMatrix(int p, int q, int n)
+{
+    Matrix <H,W> temp;
+
+    for (int k = 0; k < H; k++)
+    {
+        for (int l = 0; l < W; l++)
+        {
+            temp.setAt(k,l,0);
+        }
+    }
+
+    int i = 0, j = 0;
+    for (int r = p; r < p + n; r++) {
+        for (int c = q; c < q + n; c++) {
+            std::cout << c << " " << W << std::endl;
+            if (c >= W || r >= H) {
+                  temp.setAt(i, j,0);
+            }
+            else {
+                temp.setAt(i, j, getAt(r, c));
+            }
+          
+            j++;
+        }
+        i++;
+        j = 0;
+    }
+    return temp;
+}
+
+template<int H, int W>
 float Matrix<H, W>::getDet()
 {
     
