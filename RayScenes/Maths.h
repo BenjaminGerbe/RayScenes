@@ -54,9 +54,10 @@ class Matrix {
     Matrix transpose();
 
     template<int O, int P>
-    Matrix<H,P> operator*(Matrix<O,P>& m) {
+    Matrix<H,P> operator*(const Matrix<O,P>& m) {
+       
+        
         Matrix<H,P> mat;
-
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 mat.setAt(i, j, 0);
@@ -70,7 +71,11 @@ class Matrix {
         return mat;
     }
 
+
+
+
     Matrix<H, W> operator=(const Matrix<H,W>& mat) {
+
         for (int i = 0; i < H; i++)
         {
             for (int j = 0; j < W; j++)
@@ -219,8 +224,6 @@ class Vector {
 
 };
 
-
-
 class Vector3 : public Vector<3> {
     
     public :
@@ -230,6 +233,9 @@ class Vector3 : public Vector<3> {
     __declspec(property(get = getZ)) float z;
 
     Vector3() {
+    };
+
+    Vector3(Vector<3> vec) {
     };
 
     Vector3(float _x, float _y, float _z) {
@@ -250,6 +256,15 @@ class Vector3 : public Vector<3> {
         return Vector::getAt(2);
     };
 
+    Vector3 operator=(Vector<3> vec) {
+        for (int i = 0; i < 3; i++)
+        {
+            setAt(i, vec.getAt(i));
+        }
+
+        return (*this);
+    }
+
 };
 
 class Vector4 : public Vector<4> {
@@ -262,6 +277,9 @@ public:
     __declspec(property(get = getW)) float w;
 
     Vector4() {
+    };
+
+    Vector4(Vector<4> vec) {
     };
 
     Vector4(float _x, float _y, float _z,float _w) {
@@ -287,6 +305,24 @@ public:
         return Vector::getAt(3);
     };
 
+    template<int H>
+    friend Vector<4> operator*(const Matrix<H, 4>& t, const Vector<4>& m) {
+
+        Vector<4> mat;
+        for (int i = 0; i < H; i++) {
+            for (int j = 0; j < 1; j++) {
+                mat.setAt(i, 0);
+
+                for (int k = 0; k < 4; k++) {
+                    float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
+                    mat.setAt(i, v);
+                }
+            }
+        }
+
+        return mat;
+    }
+
 };
 
 
@@ -298,7 +334,70 @@ class Ray {
     Ray() {
         origin = Vector3();
         direction = Vector3();
-        
+    }
+
+    Ray(Vector3 ori, Vector3 dir) {
+        ori = origin;
+        direction = dir;
+    }
+
+    Ray(float ox, float oy, float oz, float dx, float dy, float dz) {
+        origin = Vector3(ox,oy,oz);
+        direction = Vector3(dx,dy,dz);
+    }
+
+    Vector3 getOrigin() {
+        return this->origin;
+    }
+
+    Vector3 getDirection() {
+        return this->direction;
+    }
+
+    void setOrigin(Vector3 o) {
+       this->origin = o;
+    }
+
+    void setDirection(Vector3 d) {
+        this->origin = d;
+    }
+
+};
+
+class Ray4 {
+    Vector4 origin;
+    Vector4 direction;
+
+public:
+    Ray4() {
+        origin = Vector4();
+        direction = Vector4();
+    }
+
+    Ray4(Vector4 ori, Vector4 dir) {
+        ori = origin;
+        direction = dir;
+    }
+
+    Ray4(float ox, float oy, float oz, float ow, float dx, float dy, float dz, float dw) {
+        origin = Vector4(ox, oy, oz,ow);
+        direction = Vector4(dx, dy, dz,dw);
+    }
+
+    Vector4 getOrigin() {
+        return this->origin;
+    }
+
+    Vector4 getDirection() {
+        return this->direction;
+    }
+
+    void setOrigin(Vector4 o) {
+        this->origin = o;
+    }
+
+    void setDirection(Vector4 d) {
+        this->origin = d;
     }
 
 };
