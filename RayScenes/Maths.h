@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <math.h>
+#include <iomanip> 
 
 template<int H,int W>
 class Matrix {
@@ -9,28 +10,32 @@ class Matrix {
     int N = H;
     int M = W;
 
-  
-
     public:
-
-    Matrix subMatrix(int p, int q, int n);
 
     Matrix();
 
     Matrix(float t[H * W]);
+  
+    Matrix(const Matrix& mat){
+        
+        for (int i = 0; i < H; i++)
+        {
+            for (int j = 0; j < W; j++)
+            {
+                setAt(i, j, mat.getAt(i, j));
+            }
+        }
 
-    template<int P, int M>
-    Matrix(Matrix<P,M> mat){
-        (*this).tab = mat.tab;
         N = mat.N;
         M = mat.M;
     }
 
     ~Matrix();
 
+
     float* getTab()const;
 
-    void setAt(int i, int j, int v);
+    void setAt(int i, int j, float v);
 
     float getAt(int i, int j) const;
 
@@ -38,7 +43,15 @@ class Matrix {
         return tab[(i * N) + j];
     }
 
-    float getDet();
+    float getDet(int n = H);
+
+    Matrix subMatrix(int p, int q, int n);
+
+    Matrix getCofactor();
+
+    Matrix getInverse();
+
+    Matrix transpose();
 
     template<int O, int P>
     Matrix<H,P> operator*(Matrix<O,P>& m) {
@@ -57,13 +70,30 @@ class Matrix {
         return mat;
     }
 
+    Matrix<H, W> operator=(const Matrix<H,W>& mat) {
+        for (int i = 0; i < H; i++)
+        {
+            for (int j = 0; j < W; j++)
+            {
+                setAt(i, j, mat.getAt(i, j));
+            }
+        }
+
+        N = mat.N;
+        M = mat.M;
+
+        return (*this);
+    };
+
     friend std::ostream& operator<<(std::ostream& os, const Matrix< H, W >& mat) {
    
+      
         for (int i = 0; i < H; ++i) {
             os << "[ ";
             for (int j = 0; j < W; ++j) {
                 if (j > 0) os << ", ";
-                os << mat(i, j);
+
+                os<< mat(i, j);
             }
             os << " ]";
             os << std::endl;
@@ -74,26 +104,9 @@ class Matrix {
 
 };
 
-template< >
-class Matrix<0,0> {
-
-
-    public:
-    void setAt(int i, int j, int v) {
-        return;
-    }
-
-    float getDet() {
-        return 1;
-    }
-
-    float getAt(int i, int j) {
-        return 0;
-    }
-
-};
 
 typedef Matrix<4, 4> Matrix4x4;
+typedef Matrix<3, 3> Matrix3x3;
 
 template<int N>
 class Vector {
@@ -119,6 +132,7 @@ class Vector {
     float norm();
 
     void normalized();
+
 
     Vector operator+(const Vector& vec) {
         Vector v;
