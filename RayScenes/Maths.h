@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __MATHlib__
+#define __MATHlib__
+
+
 #include <iostream>
 #include <math.h>
 #include <iomanip> 
@@ -154,7 +157,7 @@ class Vector {
 
         for (int i = 0; i < N; i++)
         {
-            v[i] = (*this).getAt(i) + vec[i];
+            v.setAt(i, getAt(i) + vec[i]);
         }
 
         return v;
@@ -165,7 +168,7 @@ class Vector {
 
         for (int i = 0; i < N; i++)
         {
-            v[i] = (*this).getAt(i) - vec[i];
+            v.setAt(i, getAt(i) - vec[i]);
         }
 
         return v;
@@ -176,7 +179,7 @@ class Vector {
 
         for (int i = 0; i < N; i++)
         {
-            v[i] = (*this).getAt(i)*s;
+            v.setAt(i, getAt(i) * s);
         }
         return v;
     }
@@ -402,3 +405,41 @@ public:
 
 };
 
+template<int H, int W>
+Vector<W> operator*(const Matrix<H, W>& t, const Vector<W>& m) {
+
+    Vector<W> mat;
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < 1; j++) {
+            mat.setAt(i, 0);
+
+            for (int k = 0; k < W; k++) {
+                float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
+                mat.setAt(i, v);
+            }
+        }
+    }
+
+    return mat;
+}
+
+
+template<int H, int W>
+Vector<4> operator*(const Matrix<H, 4>& t, const Vector<4>& m) {
+
+    Vector<W> mat;
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < 1; j++) {
+            mat.setAt(i, 0);
+
+            for (int k = 0; k < W; k++) {
+                float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
+                mat.setAt(i, v);
+            }
+        }
+    }
+
+    return mat;
+}
+
+#endif

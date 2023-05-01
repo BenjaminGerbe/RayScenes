@@ -72,6 +72,17 @@ Vector4 Entity::localToGlobal(const Vector4& v) const
 {
 	return this->transInv * v;
 }
+Vector<4> Entity::globalToLocal(const Vector<4>& v) const
+{
+	return this->trans * v;
+}
+
+Vector4 Entity::globalToLocal(const Vector4& v) const
+{
+	return this->trans * v;
+}
+
+
 
 Ray4 Entity::localToGlobal(const Ray4& r) const
 {
@@ -86,3 +97,32 @@ Ray4 Entity::localToGlobal(const Ray4& r) const
 	return p;
 }
 
+
+
+
+Ray4 Entity::globalToLocal(const Ray4& r) const
+{
+	Ray4 p;
+
+	Vector4 origin = globalToLocal(p.getOrigin());
+	Vector4 direction = globalToLocal(p.getDirection());
+
+	p.setDirection(direction);
+	p.setOrigin(origin);
+
+	return p;
+}
+
+Plan::Plan()
+{
+
+}
+
+bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
+{
+	Ray4 r = globalToLocal(ray);
+	float t = -r.getOrigin().z / r.getDirection().z;
+	impact = localToGlobal(r.getOrigin() + ( r.getDirection()*t));
+
+	return t > 0;
+}

@@ -293,20 +293,3 @@ float Vector<N>::dot(const Vector<N> vec) {
     return v;
 }
 
-template<int H, int W>
-Vector<W> operator*(const Matrix<H, W>& t, const Vector<W>& m) {
-
-    Vector<W> mat;
-    for (int i = 0; i < H; i++) {
-        for (int j = 0; j < 1; j++) {
-            mat.setAt(i, 0);
-
-            for (int k = 0; k < W; k++) {
-                float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
-                mat.setAt(i, v);
-            }
-        }
-    }
-
-    return mat;
-}

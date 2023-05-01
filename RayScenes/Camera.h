@@ -5,14 +5,14 @@ class Camera {
 
 	float focal;
 
-	public :
+public:
 
 	Camera();
 
 	float getFocal() {
-			return focal;
+		return focal;
 	}
 
-	Ray getRay(float x,float y) const;
+	Ray getRay(float x, float y) const;
 
 };
