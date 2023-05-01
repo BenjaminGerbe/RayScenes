@@ -112,8 +112,8 @@ template<int N>
 class Vector {
 
 
-    float tab[N];
-    float norme;
+    float* tab = new float[N];
+ 
 
     public :
 
@@ -127,12 +127,22 @@ class Vector {
 
     float getAt(int i) const;
 
-    void updateNorme();
+    float getNorme();
 
-    float norm();
+    Vector normalized();
 
-    void normalized();
+    Vector(const Vector& vec);
 
+    ~Vector();
+
+    Vector operator=(const Vector& vec) {
+        for (int i = 0; i < N; i++)
+        {
+            tab[i] = vec.tab[i];
+        }
+
+        return (*this);
+    }
 
     Vector operator+(const Vector& vec) {
         Vector v;
@@ -142,8 +152,6 @@ class Vector {
             v[i] = (*this).getAt(i) + vec[i];
         }
 
-
-        v.updateNorme();
         return v;
     }
 
@@ -155,9 +163,6 @@ class Vector {
             v[i] = (*this).getAt(i) - vec[i];
         }
 
-
-        v.updateNorme();
-
         return v;
     }
 
@@ -168,8 +173,6 @@ class Vector {
         {
             v[i] = (*this).getAt(i)*s;
         }
-
-        v.updateNorme();
         return v;
     }
 
@@ -180,8 +183,6 @@ class Vector {
         {
             v[i] = -(*this).getAt(i);
         }
-
-        v.updateNorme();
         return v;
     }
 
@@ -193,7 +194,6 @@ class Vector {
             v[i] = (*this).getAt(i) / s;
         }
 
-        v.updateNorme();
         return v;
     }
 
@@ -219,7 +219,76 @@ class Vector {
 
 };
 
-typedef Vector<3> Vector3;
+
+
+class Vector3 : public Vector<3> {
+    
+    public :
+
+    __declspec(property(get = getX)) float x;
+    __declspec(property(get = getY)) float y;
+    __declspec(property(get = getZ)) float z;
+
+    Vector3() {
+    };
+
+    Vector3(float _x, float _y, float _z) {
+        setAt(0, _x);
+        setAt(1, _y);
+        setAt(2, _z);
+    }
+
+    float getX() {
+        return Vector::getAt(0);
+    };
+
+    float getY() {
+        return Vector::getAt(1);
+    };
+
+    float getZ() {
+        return Vector::getAt(2);
+    };
+
+};
+
+class Vector4 : public Vector<4> {
+
+public:
+
+    __declspec(property(get = getX)) float x;
+    __declspec(property(get = getY)) float y;
+    __declspec(property(get = getZ)) float z;
+    __declspec(property(get = getW)) float w;
+
+    Vector4() {
+    };
+
+    Vector4(float _x, float _y, float _z,float _w) {
+        setAt(0, _x);
+        setAt(1, _y);
+        setAt(2, _z);
+        setAt(3, _z);
+    }
+
+    float getX() {
+        return Vector::getAt(0);
+    };
+
+    float getY() {
+        return Vector::getAt(1);
+    };
+
+    float getZ() {
+        return Vector::getAt(2);
+    };
+
+    float getW() {
+        return Vector::getAt(3);
+    };
+
+};
+
 
 class Ray {
     Vector3 origin;
@@ -229,6 +298,7 @@ class Ray {
     Ray() {
         origin = Vector3();
         direction = Vector3();
+        
     }
 
 };

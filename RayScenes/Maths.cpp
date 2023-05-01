@@ -21,6 +21,7 @@ float Matrix <H,W>::getAt(int i, int j) const{
     return tab[(i * N) + j];
 }
 
+
 template<int H, int W>
 Matrix < H,W > Matrix<H, W>::subMatrix(int p, int q, int n)
 {
@@ -204,10 +205,7 @@ Matrix <H, W>::~Matrix() {
     delete[] tab;
 }
 
-
-
-// Vector implementation //
-
+// Vector implementation /
 template<int N>
 Vector<N>::Vector() {
 
@@ -216,7 +214,6 @@ Vector<N>::Vector() {
         tab[i] = 0.0;
     }
 
-    updateNorme();
     
 }
 
@@ -227,9 +224,16 @@ Vector<N>::Vector(float* t[N]) {
         tab[i] = t[i];
     }
 
-    updateNorme();
 }
 
+template<int N>
+Vector<N>::Vector(const Vector<N>& vec)
+{
+    for (int i = 0; i < N; i++)
+    {
+        tab[i] = vec.tab[i];
+    }
+}
 
 template<int N>
 float* Vector<N>::getTab()const {
@@ -239,10 +243,8 @@ float* Vector<N>::getTab()const {
 template<int N>
 void Vector<N>::setAt(int i, float v) {
     tab[i] = v;
-    updateNorme();
+ 
 }
-
-
 
 template<int N>
 float Vector<N>::getAt(int i) const {
@@ -250,13 +252,13 @@ float Vector<N>::getAt(int i) const {
 }
 
 template<int N>
-float Vector<N>::norm() {
-    return norme;
+Vector<N>::~Vector()
+{
+    delete[] tab;
 }
 
-
 template<int N>
-void Vector<N>::updateNorme() {
+float Vector<N>::getNorme() {
 
     float sum = 0.0;
     for (int i = 0; i < N; i++)
@@ -264,17 +266,19 @@ void Vector<N>::updateNorme() {
         sum += tab[i] * tab[i];
     }
 
-    norme = std::sqrtf(sum);
+    return std::sqrtf(sum);
 }
 
 template<int N>
-void Vector<N>::normalized() {
-    float norme = norme();
+Vector<N> Vector<N>::normalized() {
+    float norme = getNorme();
 
     for (int i = 0; i < N; i++)
     {
         tab[i] = tab[i] / norme;
     }
+
+    return (*this);
 }
 
 

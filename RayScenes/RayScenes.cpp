@@ -38,10 +38,15 @@ int main()
 
 	Matrix4x4 m(f);
 
-	Vector<5> vec;
+	Vector4 vec(1, 2, 3,4);
 
-	std::cout << mat << std::endl;
-	std::cout << mat.getInverse() << std::endl;
+	std::cout << vec << std::endl;
+	std::cout << vec.x << std::endl;
+
+	vec.setAt(0, 2);
+
+	std::cout << vec << std::endl;
+	std::cout << vec.x << std::endl;
 
 	return 0;
 }
