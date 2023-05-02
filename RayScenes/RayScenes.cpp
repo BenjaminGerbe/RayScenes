@@ -2,7 +2,6 @@
 //
 
 #include "RayScenes.h"
-#include "Maths.cpp"
 
 int main()
 {

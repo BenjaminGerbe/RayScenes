@@ -7,6 +7,11 @@
 #include <stdlib.h>
 #include <string>
 
+#ifndef __MATH__
+#define __MATH__
+#include "Maths.cpp"
+#endif
+
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

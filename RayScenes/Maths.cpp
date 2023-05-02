@@ -292,4 +292,3 @@ float Vector<N>::dot(const Vector<N> vec) {
 
     return v;
 }
-
