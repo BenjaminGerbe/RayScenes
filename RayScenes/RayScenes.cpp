@@ -19,22 +19,21 @@ int main()
 	};
 
 	Matrix3x3 mat(f);
+	
 
-	Image img(1920, 1080, 3);
+	Camera cam(1920/4, 1080/4,5);
+	Image img(cam.getWidth(),cam.getHeight(), 3);
 
-	Camera cam;
-	Plan plan;
-	plan.translate(0, 0, 10);
-
+	Vector4 position(0, 0, 0, 1);
+	Sphere sphere;
+	sphere.translate(0,0,10);
+	float max = 0;
 	std::vector<unsigned char*> arr = img.getImage();
-
+	int idx = 0;
 	for (int i = 0; i < img.getWidth(); i++) {
 		for (int j = 0; j < img.getHeight(); j++) {
-			for (int k = 0; k < 3; k++)
-			{
+			idx++;
 
-				arr[j * img.getWidth() + i][k] = 255;
-			}
 
 			float x = (float)i / img.getWidth();
 			float y = (float)j / img.getHeight();
@@ -44,21 +43,38 @@ int main()
 			Vector4 impact;
 
 		
-			bool b = plan.Intersect(r4, impact);
+			bool b = sphere.Intersect(r4, impact);
 
-			if (b) {
-				std::cout << "IMPACT" << std::endl;
+			//std::cout << (idx / (float)(img.getWidth() * img.getHeight())) * 100 << std::endl;
+
+			for (int k = 0; k < 3; k++)
+			{
+
+				if (b) {
+					
+
+					Ray4 normal = sphere.getNormal(impact, position);
+					Vector3 norm(normal.getDirection().x, normal.getDirection().y, normal.getDirection().z);
+					norm = norm.normalized();
+					Vector3 camDir(-1,0,0);
+					
+					float N = (camDir.dot(norm)) * 255.0*10;
+
+					 N = std::clamp(N,10.0f, 255.0f);
+					
+					arr[j * img.getWidth() + i][k] = N;
+
+
+				}
+				else {
+					arr[j * img.getWidth() + i][k] = 0;
+				}
 			}
-
-			
 
 		}
 	}
 
-	Vector3 vec(1, 2, 3);
 
-	std::cout << mat * vec << std::endl;
-	;
 
 	stbi_write_png("output.png", img.getWidth(), img.getHeight(), img.getDim(), &img.getFlatArray()[0], img.getWidth() * img.getDim());
 	return 0;

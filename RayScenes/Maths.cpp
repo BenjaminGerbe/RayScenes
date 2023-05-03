@@ -218,7 +218,8 @@ Vector<N>::Vector() {
 }
 
 template<int N>
-Vector<N>::Vector(float* t[N]) {
+Vector<N>::Vector(float t[N]) {
+
     for (int i = 0; i < N; i++)
     {
         tab[i] = t[i];
@@ -229,8 +230,9 @@ Vector<N>::Vector(float* t[N]) {
 template<int N>
 Vector<N>::Vector(const Vector<N>& vec)
 {
-    for (int i = 0; i < N; i++)
-    {
+    
+    tab = new float[N];
+    for (int i = 0; i < N; i++) {
         tab[i] = vec.tab[i];
     }
 }
@@ -254,6 +256,7 @@ float Vector<N>::getAt(int i) const {
 template<int N>
 Vector<N>::~Vector()
 {
+
     delete[] tab;
 }
 

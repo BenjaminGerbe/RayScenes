@@ -8,15 +8,25 @@
 
 
 class Camera {
-
+	float height;
+	float width;
 	float focal;
 
 public:
 
-	Camera();
+	Camera(float W, float H,int F) : width(W), height(H),focal(F) {};
+
 
 	float getFocal() {
 		return focal;
+	}
+
+	float getHeight() {
+		return height;
+	};
+
+	float getWidth() {
+		return width;
 	}
 
 	Ray getRay(float x, float y)const ;

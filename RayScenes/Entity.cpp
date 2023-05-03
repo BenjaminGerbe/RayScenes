@@ -82,16 +82,8 @@ Vector<4> Entity::globalToLocal(const Vector<4>& v) const
 
 Vector4 Entity::globalToLocal(const Vector4& v) const
 {
-	/*
-	std::cout << this->trans << std::endl;
-	std::cout << " * " << std::endl;
-	std::cout << v << std::endl;
-	std::cout << " -------- " << std::endl;
-
-	std::cout << " ========== " << std::endl;*/
-
-	std::cout << this->trans * v << std::endl;
-	return this->trans * v;
+	Vector4 vec = this->trans * v;
+	return vec;
 }
 
 
@@ -102,6 +94,8 @@ Ray4 Entity::localToGlobal(const Ray4& r) const
 
 	Vector4 origin = localToGlobal(r.getOrigin());
 	Vector4 direction = localToGlobal(r.getDirection());
+
+
 
 	p.setDirection(direction);
 	p.setOrigin(origin);
@@ -118,7 +112,7 @@ Ray4 Entity::globalToLocal(const Ray4& r) const
 
 	Vector4 origin = globalToLocal(r.getOrigin());
 	Vector4 direction = globalToLocal(r.getDirection());
-	std::cout <<origin << std::endl;
+	
 	p.setDirection(direction);
 	p.setOrigin(origin);
 
@@ -137,6 +131,85 @@ bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
 	float t = -r.getOrigin().z / r.getDirection().z;
 	impact = localToGlobal(r.getOrigin() + ( r.getDirection()*t));
 
-	
 	return t > 0;
+}
+
+Square::Square()
+{
+}
+
+bool Square::Intersect(const Ray4& ray, Vector4& impact) const
+{
+	Ray4 r = globalToLocal(ray);
+	float t = -r.getOrigin().z / r.getDirection().z;
+	impact = localToGlobal(r.getOrigin() +( r.getDirection()*t));
+	Vector4 localimpact = r.getOrigin() + ( r.getDirection()*t);
+
+	if (t > 0) {
+
+		return (localimpact[0] >= -1 && localimpact[0] <= 1 && localimpact[1] >= -1 && localimpact[1] <= 1);
+	}
+
+
+
+	return false;
+}
+
+Sphere::Sphere()
+{
+}
+
+bool Sphere::Intersect(const Ray4& ray, Vector4& impact) const
+{
+	Ray4 r = globalToLocal(ray);
+
+	Vector4 vector = r.getDirection();
+	Vector4 origin = r.getOrigin();
+	
+	float a = pow(vector.x, 2) + pow(vector.y, 2) + pow(vector.z, 2);
+	float b = 2 * (origin.x * vector.x + origin.y * vector.y +origin.z * vector.z);
+	float c = (pow(origin.x, 2) + pow(origin.y, 2) + pow(origin.z, 2)) - 1;
+
+	float alpha = pow(b, 2) - 4.0 * a * c;
+
+
+	float x1 = (-b + sqrt(alpha)) / (2 * a);
+	float x2 = (-b - sqrt(alpha)) / (2 * a);
+
+	if (x1 < 0 && x2 < 0) {
+		return false;
+	}
+
+	float t = x2;
+
+	if (x1 >= 0 && x2 < 0) {
+		t = x1;
+	}
+
+	if (t >= 0) {
+		impact = localToGlobal(origin +  t*vector);
+		return true;
+	}
+
+
+	return false;
+}
+
+Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
+{
+	Vector4 p = globalToLocal(impact);
+	Vector4 obs = globalToLocal(observator);
+
+	Vector4 vec;
+	vec = p;
+
+	if (obs[0] * obs[0] + obs[1] * obs[1] + obs[2] * obs[2] <= 1) {
+		vec = -vec;
+	}
+
+	vec = localToGlobal(vec);
+	vec = vec.normalized();
+
+	Ray4 r(impact, vec);
+	return r;
 }

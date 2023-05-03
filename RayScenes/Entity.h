@@ -41,3 +41,21 @@ class Plan : public Entity{
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 
 };
+
+class Square : public Entity {
+public :
+	Square();
+
+	bool Intersect(const Ray4& ray, Vector4& impact) const;
+
+};
+
+class Sphere : public Entity {
+	public:
+	Sphere();
+
+	bool Intersect(const Ray4& ray, Vector4& impact) const;
+
+	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
+
+};

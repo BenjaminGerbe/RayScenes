@@ -127,7 +127,7 @@ class Vector {
 
     Vector();
 
-    Vector(float* t[N]);
+    Vector(float t[N]);
 
     float* getTab()const;
 
@@ -144,9 +144,15 @@ class Vector {
     ~Vector();
 
     Vector operator=(const Vector& vec) {
+
+  
+    
+       Vector::~Vector();
+        tab = new float[N];
+
         for (int i = 0; i < N; i++)
         {
-            tab[i] = vec.tab[i];
+            setAt(i, vec.getAt(i));
         }
 
         return (*this);
@@ -184,12 +190,13 @@ class Vector {
         return v;
     }
 
+ 
     Vector operator-() {
         Vector v;
 
         for (int i = 0; i < N; i++)
         {
-            v[i] = -(*this).getAt(i);
+            setAt(i, -(*this).getAt(i));
         }
         return v;
     }
@@ -204,6 +211,9 @@ class Vector {
 
         return v;
     }
+
+    template<int H, int W>
+    friend Vector<W> operator*(const Matrix<H, W>& t, const Vector<W>& m);
 
 
     float operator[](int i) const {
@@ -283,6 +293,10 @@ public:
     };
 
     Vector4(Vector<4> vec) {
+
+        for (int i = 0; i < 4; i++) {
+            setAt(i, vec.getAt(i));
+        }
     };
 
     Vector4(float _x, float _y, float _z,float _w) {
@@ -307,24 +321,6 @@ public:
     float getW() {
         return Vector::getAt(3);
     };
-
-    template<int H>
-    friend Vector<4> operator*(const Matrix<H, 4>& t, const Vector<4>& m) {
-
-        Vector<4> mat;
-        for (int i = 0; i < H; i++) {
-            for (int j = 0; j < 1; j++) {
-                mat.setAt(i, 0);
-
-                for (int k = 0; k < 4; k++) {
-                    float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
-                    mat.setAt(i, v);
-                }
-            }
-        }
-
-        return mat;
-    }
 
 };
 
@@ -406,7 +402,7 @@ public:
     }
 
     void setDirection(const Vector4 d) {
-        this->origin = d;
+        this->direction = d;
     }
 
 };
@@ -415,37 +411,20 @@ template<int H, int W>
 Vector<W> operator*(const Matrix<H, W>& t, const Vector<W>& m) {
 
     Vector<W> mat;
-    for (int i = 0; i < H; i++) {
-        for (int j = 0; j < 1; j++) {
-            mat.setAt(i, 0);
-
-            for (int k = 0; k < W; k++) {
-                float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
-                mat.setAt(i, v);
-            }
+    for (int i = 0; i < H; i++) {    
+        mat.setAt(i, 0);
+        for (int k = 0; k < W; k++) {
+            float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
+            mat.setAt(i, v);
         }
     }
 
     return mat;
 }
 
-
-template<int H, int W>
-Vector<4> operator*(const Matrix<H, 4>& t, const Vector<4>& m) {
-
-    Vector<W> mat;
-    for (int i = 0; i < H; i++) {
-        for (int j = 0; j < 1; j++) {
-            mat.setAt(i, 0);
-
-            for (int k = 0; k < W; k++) {
-                float v = mat.getAt(i) + (t)(i, k) * m.getAt(k);
-                mat.setAt(i, v);
-            }
-        }
-    }
-
-    return mat;
+template<int N>
+Vector<N> operator*(  float& b,  Vector<N>& vec) {
+    return vec * b;
 }
 
 #endif
