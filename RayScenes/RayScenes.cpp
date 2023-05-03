@@ -44,6 +44,7 @@ int main()
 	Vector3 vec(1, 2, 3);
 
 	std::cout << mat * vec << std::endl;
+	;
 
 	stbi_write_png("output.png", img.getWidth(), img.getHeight(), img.getDim(), &img.getFlatArray()[0], img.getWidth() * img.getDim());
 	return 0;
