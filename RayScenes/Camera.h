@@ -19,8 +19,8 @@ public:
 		return focal;
 	}
 
-	Ray getRay(float x, float y) const;
-
+	Ray getRay(float x, float y)const ;
+	
 };
 
 #endif

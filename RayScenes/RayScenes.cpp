@@ -22,6 +22,8 @@ int main()
 
 	Image img(1920, 1080, 3);
 
+	Camera cam;
+
 	std::vector<unsigned char*> arr = img.getImage();
 
 	for (int i = 0; i < img.getWidth(); i++) {
