@@ -11,17 +11,19 @@ int main()
 	unsigned char* image = new unsigned char[1920 * 1080];
 
 
-	float* f = new float[9]
+	float* f = new float[16]
 	{
-		1, 5, 3,
-			4, 5, 6,
-			7, 8, 9
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
 	};
 
-	Matrix3x3 mat(f);
-	
+	Matrix4x4 mat(f);
 
-	Camera cam(1920/4, 1080/4,5);
+	Camera cam(1920, 1080,5);
+	
+	cam.rotateY(10*(M_PI/180.0f));
 	Image img(cam.getWidth(),cam.getHeight(), 3);
 
 	Vector4 position(0, 0, 0, 1);
@@ -38,12 +40,11 @@ int main()
 			float x = (float)i / img.getWidth();
 			float y = (float)j / img.getHeight();
 
-			Ray r = cam.getRay(x, y);
-			Ray4 r4(r);
+			Ray4 r = cam.getRay(x, y);
 			Vector4 impact;
 
 		
-			bool b = sphere.Intersect(r4, impact);
+			bool b = sphere.Intersect(r, impact);
 
 			//std::cout << (idx / (float)(img.getWidth() * img.getHeight())) * 100 << std::endl;
 

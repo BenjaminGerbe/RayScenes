@@ -1,5 +1,24 @@
 #include "Entity.h"
 
+Ray4 Camera::getRay(float x, float y) const
+{
+
+	float ratio = width / height;
+
+	Vector3  origin(((x * 2) - 1) * ratio, (y * 2) - 1, 0);
+	Vector3 v(origin.x, origin.y, -focal);
+	v = v.normalized();
+
+	Ray r(origin, v);
+
+	Ray4 ray(r);
+
+
+	ray = localToGlobal(Ray4(r));
+	return ray;
+}
+
+
 void Entity::translate(float x, float y, float z) {
 	trans.setAt(0, 3, trans.getAt(0, 3) + x);
 	trans.setAt(1, 3, trans.getAt(1, 3) + y);

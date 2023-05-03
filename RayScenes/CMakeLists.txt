@@ -3,7 +3,7 @@
 #
 
 # Add source to this project's executable.
-add_executable (RayScenes "RayScenes.cpp" "RayScenes.h"  "stb_image.h" "stb_image_write.h"  "Image.h" "Maths.h" "Maths.cpp"  "Camera.h" "Camera.cpp" "Entity.h" "Entity.cpp")
+add_executable (RayScenes "RayScenes.cpp" "RayScenes.h"  "stb_image.h" "stb_image_write.h"  "Image.h" "Maths.h" "Maths.cpp"  "Entity.h" "Entity.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET RayScenes PROPERTY CXX_STANDARD 20)

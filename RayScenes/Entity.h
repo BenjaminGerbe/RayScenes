@@ -33,6 +33,33 @@ class Entity {
 		
 };
 
+class Camera : public Entity{
+	float height;
+	float width;
+	float focal;
+
+public:
+
+	Camera(float W, float H, int F) : width(W), height(H), focal(F) {};
+
+
+	float getFocal() {
+		return focal;
+	}
+
+	float getHeight() {
+		return height;
+	};
+
+	float getWidth() {
+		return width;
+	}
+
+	Ray4 getRay(float x, float y)const;
+
+};
+
+
 class Plan : public Entity{
 
 	public:

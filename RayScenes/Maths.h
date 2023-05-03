@@ -1,6 +1,7 @@
 #ifndef __MATHlib__
 #define __MATHlib__
 
+# define M_PI           3.14159265358979323846  /* pi */
 
 #include <iostream>
 #include <math.h>
@@ -73,6 +74,7 @@ class Matrix {
 
         return mat;
     }
+
 
 
 
@@ -380,7 +382,7 @@ public:
     }
 
     Ray4(Vector4 ori, Vector4 dir) {
-        ori = origin;
+        origin = ori ;
         direction = dir;
     }
 
@@ -405,6 +407,14 @@ public:
         this->direction = d;
     }
 
+    
+    friend Ray4 operator*(const Matrix4x4& mat,const Ray4& r) {
+    
+        Ray4 ray(mat * r.getOrigin(), mat * r.getDirection());
+    
+        return ray;
+    }
+
 };
 
 template<int H, int W>
@@ -426,5 +436,8 @@ template<int N>
 Vector<N> operator*(  float& b,  Vector<N>& vec) {
     return vec * b;
 }
+
+
+
 
 #endif
