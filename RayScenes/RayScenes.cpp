@@ -34,9 +34,11 @@ int main()
 				arr[j * img.getWidth() + i][k] = 255;
 			}
 
-			float x = i / img.getWidth();
-			float y = j / img.getHeight();
+			float x = (float)i / img.getWidth();
+			float y = (float)j / img.getHeight();
 
+			Ray r = cam.getRay(x, y);
+			std::cout << r.getOrigin() << " " << r.getDirection() << std::endl;
 
 		}
 	}
