@@ -289,7 +289,7 @@ public:
         setAt(0, _x);
         setAt(1, _y);
         setAt(2, _z);
-        setAt(3, _z);
+        setAt(3, _w);
     }
 
     float getX() {
@@ -377,6 +377,12 @@ public:
         direction = Vector4();
     }
 
+    Ray4(Ray r) {
+        origin = *new Vector4(r.getOrigin().x, r.getOrigin().y, r.getOrigin().z, 1);
+        direction = *new Vector4(r.getDirection().x, r.getDirection().y, r.getDirection().z, 0);
+
+    }
+
     Ray4(Vector4 ori, Vector4 dir) {
         ori = origin;
         direction = dir;
@@ -387,19 +393,19 @@ public:
         direction = Vector4(dx, dy, dz,dw);
     }
 
-    Vector4 getOrigin() {
+    Vector4 getOrigin() const{
         return this->origin;
     }
 
-    Vector4 getDirection() {
+    Vector4 getDirection()const {
         return this->direction;
     }
 
-    void setOrigin(Vector4 o) {
+    void setOrigin(const Vector4 o) {
         this->origin = o;
     }
 
-    void setDirection(Vector4 d) {
+    void setDirection(const Vector4 d) {
         this->origin = d;
     }
 

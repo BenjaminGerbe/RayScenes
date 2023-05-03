@@ -23,6 +23,8 @@ int main()
 	Image img(1920, 1080, 3);
 
 	Camera cam;
+	Plan plan;
+	plan.translate(0, 0, 10);
 
 	std::vector<unsigned char*> arr = img.getImage();
 
@@ -38,7 +40,17 @@ int main()
 			float y = (float)j / img.getHeight();
 
 			Ray r = cam.getRay(x, y);
-			std::cout << r.getOrigin() << " " << r.getDirection() << std::endl;
+			Ray4 r4(r);
+			Vector4 impact;
+
+		
+			bool b = plan.Intersect(r4, impact);
+
+			if (b) {
+				std::cout << "IMPACT" << std::endl;
+			}
+
+			
 
 		}
 	}

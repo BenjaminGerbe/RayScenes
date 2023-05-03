@@ -65,20 +65,32 @@ void Entity::rotateZ(float deg) {
 
 Vector<4> Entity::localToGlobal(const Vector<4>& v) const
 {
+
 	return this->transInv * v;
 }
 
 Vector4 Entity::localToGlobal(const Vector4& v) const
 {
+	
 	return this->transInv * v;
 }
 Vector<4> Entity::globalToLocal(const Vector<4>& v) const
 {
+	
 	return this->trans * v;
 }
 
 Vector4 Entity::globalToLocal(const Vector4& v) const
 {
+	/*
+	std::cout << this->trans << std::endl;
+	std::cout << " * " << std::endl;
+	std::cout << v << std::endl;
+	std::cout << " -------- " << std::endl;
+
+	std::cout << " ========== " << std::endl;*/
+
+	std::cout << this->trans * v << std::endl;
 	return this->trans * v;
 }
 
@@ -88,9 +100,9 @@ Ray4 Entity::localToGlobal(const Ray4& r) const
 {
 	Ray4 p;
 
-	Vector4 origin = localToGlobal(p.getOrigin());
-	Vector4 direction = localToGlobal(p.getDirection());
-	
+	Vector4 origin = localToGlobal(r.getOrigin());
+	Vector4 direction = localToGlobal(r.getDirection());
+
 	p.setDirection(direction);
 	p.setOrigin(origin);
 
@@ -104,9 +116,9 @@ Ray4 Entity::globalToLocal(const Ray4& r) const
 {
 	Ray4 p;
 
-	Vector4 origin = globalToLocal(p.getOrigin());
-	Vector4 direction = globalToLocal(p.getDirection());
-
+	Vector4 origin = globalToLocal(r.getOrigin());
+	Vector4 direction = globalToLocal(r.getDirection());
+	std::cout <<origin << std::endl;
 	p.setDirection(direction);
 	p.setOrigin(origin);
 
@@ -120,9 +132,11 @@ Plan::Plan()
 
 bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
 {
+
 	Ray4 r = globalToLocal(ray);
 	float t = -r.getOrigin().z / r.getDirection().z;
 	impact = localToGlobal(r.getOrigin() + ( r.getDirection()*t));
 
+	
 	return t > 0;
 }

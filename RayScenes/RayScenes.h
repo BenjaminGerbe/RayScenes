@@ -22,3 +22,4 @@
 #include "Image.h"
 
 #include "Camera.h"
+#include "Entity.h"

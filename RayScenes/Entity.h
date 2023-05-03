@@ -1,11 +1,20 @@
 #pragma once
+#ifndef __MATH__
+#define __MATH__
 #include "Maths.cpp"
+#endif
+
 class Entity {
+
+	float x;
+	float y;
+	float z;
 
 	Matrix<4,4> trans;
 	Matrix<4,4> transInv;
 
 	public:
+
 	void translate(float x, float y, float z);
 	void scale(float f);
 	void rotateX(float deg);
@@ -24,7 +33,7 @@ class Entity {
 		
 };
 
-class Plan : Entity{
+class Plan : public Entity{
 
 	public:
 	Plan();
