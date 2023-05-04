@@ -65,8 +65,9 @@ class Plan : public Entity{
 	public:
 	Plan();
 
-	bool Intersect(const Ray4& ray, Vector4& impact) const;
 
+	bool Intersect(const Ray4& ray, Vector4& impact) const;
+	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
 
 class Square : public Entity {
@@ -74,12 +75,22 @@ public :
 	Square();
 
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
-
+	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
 
 class Sphere : public Entity {
 	public:
 	Sphere();
+
+	bool Intersect(const Ray4& ray, Vector4& impact) const;
+
+	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
+
+};
+
+class InfCylender : public Entity {
+	public:
+	InfCylender();
 
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 

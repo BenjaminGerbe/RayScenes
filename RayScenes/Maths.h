@@ -407,6 +407,12 @@ public:
         this->direction = d;
     }
 
+    Ray4 normalized() {
+
+        this->direction = this->direction.normalized();
+
+        return (*this);
+    }
     
     friend Ray4 operator*(const Matrix4x4& mat,const Ray4& r) {
     

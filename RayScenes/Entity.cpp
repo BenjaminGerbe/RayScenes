@@ -29,6 +29,7 @@ void Entity::translate(float x, float y, float z) {
 
 
 void Entity::scale(float f) {
+
 	Matrix4x4 scale;
 	scale.setAt(0, 0, f);
 	scale.setAt(1, 1, f);
@@ -153,6 +154,22 @@ bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
 	return t > 0;
 }
 
+Ray4 Plan::getNormal(const Vector4& impact, const Vector4& observator) const
+{
+	Vector4 p = globalToLocal(impact);
+	Vector4 obs = globalToLocal(observator);
+
+	Vector4 vec(0, 0, -1,0);
+
+	if (p[2] < obs[2]) {
+		vec.setAt(2, 1);
+	}
+
+	Ray4 r(impact, localToGlobal(vec));
+
+	return r;
+}
+
 Square::Square()
 {
 }
@@ -172,6 +189,22 @@ bool Square::Intersect(const Ray4& ray, Vector4& impact) const
 
 
 	return false;
+}
+
+Ray4 Square::getNormal(const Vector4& impact, const Vector4& observator) const
+{
+	Vector4 p = globalToLocal(impact);
+	Vector4 obs = globalToLocal(observator);
+
+	Vector4 vec(0, 0, -1, 0);
+
+	if (p[2] < obs[2]) {
+		vec.setAt(2, 1);
+	}
+
+	Ray4 r(impact, localToGlobal(vec));
+
+	return r;
 }
 
 Sphere::Sphere()
@@ -231,4 +264,52 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 
 	Ray4 r(impact, vec);
 	return r;
+}
+
+InfCylender::InfCylender()
+{
+}
+
+bool InfCylender::Intersect(const Ray4& ray, Vector4& impact) const
+{
+	Ray4 r = globalToLocal(ray);
+
+	Vector4 vector = r.getDirection();
+	Vector4 origin = r.getOrigin();
+	float a = pow(vector.x, 2) + pow(vector.z, 2);
+	float b = 2 * (origin.x * vector.x + origin.z * vector.z);
+	float c = (pow(origin.x, 2) + pow(origin.z, 2)) - 1;
+
+	float alpha = pow(b, 2) - 4.0 * a * c;
+
+
+	float x1 = (-b + sqrt(alpha)) / (2 * a);
+	float x2 = (-b - sqrt(alpha)) / (2 * a);
+
+	if (x1 < 0 && x2 < 0) {
+		return false;
+	}
+
+	float t = x2;
+
+	if (x1 >= 0 && x2 < 0) {
+		t = x1;
+	}
+
+	if (t >= 0) {
+		impact = localToGlobal(origin + t * vector);
+		return true;
+	}
+
+
+	return false;
+}
+
+Ray4 InfCylender::getNormal(const Vector4& impact, const Vector4& observator) const
+{
+	Vector4 lp = globalToLocal(impact);
+	Vector4 lo = globalToLocal(observator);
+	if ((lo - Vector4(0, lo[1], 0,0)).getNorme() > 1)
+		return localToGlobal(Ray4(lp, Vector4(lp[0], 0, lp[2],0))).normalized();
+	return localToGlobal(Ray4(lp, Vector4(-lp[0], 0, -lp[2],0))).normalized();
 }
