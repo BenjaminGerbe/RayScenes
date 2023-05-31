@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
 
 #ifndef __MATH__
 #define __MATH__

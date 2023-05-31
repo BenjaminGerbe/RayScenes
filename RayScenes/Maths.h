@@ -76,9 +76,6 @@ class Matrix {
     }
 
 
-
-
-
     Matrix<H, W> operator=(const Matrix<H,W>& mat) {
 
         for (int i = 0; i < H; i++)
@@ -198,7 +195,7 @@ class Vector {
 
         for (int i = 0; i < N; i++)
         {
-            setAt(i, -(*this).getAt(i));
+            v.setAt(i, -(*this).getAt(i));
         }
         return v;
     }

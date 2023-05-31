@@ -4,11 +4,16 @@
 #include "Maths.cpp"
 #endif
 
+
+#include <vector>
+enum Objects {
+	objSphere,
+	objSquare,
+	objInfCylender
+};
+
 class Entity {
 
-	float x;
-	float y;
-	float z;
 
 	Matrix<4,4> trans;
 	Matrix<4,4> transInv;
@@ -30,6 +35,9 @@ class Entity {
 
 	Ray4 localToGlobal(const Ray4& r) const;
 	Ray4 globalToLocal(const Ray4& r) const;
+
+	virtual bool Intersect(const Ray4& ray, Vector4& impact)const;
+	virtual Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 		
 };
 
@@ -66,7 +74,7 @@ class Plan : public Entity{
 	Plan();
 
 
-	bool Intersect(const Ray4& ray, Vector4& impact) const;
+	bool  Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
 
@@ -95,5 +103,31 @@ class InfCylender : public Entity {
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
+
+};
+
+class Light {
+
+};
+
+class Scene {
+	std::vector<Entity*> lstObject;
+	std::vector<Light*> lstLights;
+
+	public:
+
+	Scene() {
+		lstObject = std::vector<Entity*>();
+		lstLights = std::vector<Light*>();
+	};
+
+	float* getPixelColor(Ray4 ray);
+
+	void AddToScene(Entity* ent, float x, float y, float z);
+
+	~Scene() {
+		lstObject.clear();
+		lstLights.clear();
+	}
 
 };

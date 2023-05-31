@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include <algorithm>
 
 Ray4 Camera::getRay(float x, float y) const
 {
@@ -139,6 +140,16 @@ Ray4 Entity::globalToLocal(const Ray4& r) const
 	return p;
 }
 
+bool Entity::Intersect(const Ray4& ray, Vector4& impact) const
+{
+	return true;
+}
+
+Ray4 Entity::getNormal(const Vector4& impact, const Vector4& observator) const
+{
+	return Ray4();
+}
+
 Plan::Plan()
 {
 
@@ -252,6 +263,7 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 	Vector4 p = globalToLocal(impact);
 	Vector4 obs = globalToLocal(observator);
 
+
 	Vector4 vec;
 	vec = p;
 
@@ -261,6 +273,7 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 
 	vec = localToGlobal(vec);
 	vec = vec.normalized();
+
 
 	Ray4 r(impact, vec);
 	return r;
@@ -312,4 +325,30 @@ Ray4 InfCylender::getNormal(const Vector4& impact, const Vector4& observator) co
 	if ((lo - Vector4(0, lo[1], 0,0)).getNorme() > 1)
 		return localToGlobal(Ray4(lp, Vector4(lp[0], 0, lp[2],0))).normalized();
 	return localToGlobal(Ray4(lp, Vector4(-lp[0], 0, -lp[2],0))).normalized();
+}
+
+
+float* Scene:: getPixelColor(Ray4 ray) {
+	float* color = new float[3] {0, 0, 0};
+	Vector4 impact;
+	for (int i = 0; i < lstObject.size(); i++)
+	{
+		if (lstObject[i]->Intersect(ray, impact)) {
+			Ray4 vec = lstObject[i]->getNormal(impact, Vector4(0,0,0,1));
+			
+			float N = vec.getDirection().dot(Vector4(1, 0, 0,0))*255;
+			N = std::clamp(N, 10.0f, 255.0f);
+		
+			color[0] = N;
+			color[1] = N;
+			color[2] = N;
+		}
+	}
+
+	return color;
+}
+
+void Scene::AddToScene(Entity* ent, float x, float y, float z) {
+	ent->translate(x, y, z);
+	lstObject.push_back(ent);
 }
