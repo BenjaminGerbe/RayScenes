@@ -45,6 +45,7 @@ class Camera : public Entity{
 	float height;
 	float width;
 	float focal;
+	float* color;
 
 public:
 
@@ -61,6 +62,14 @@ public:
 
 	float getWidth() {
 		return width;
+	}
+
+	float* getBackgroundColor() {
+		return color;
+	}
+
+	void setColor(float* c) {
+		color = c;
 	}
 
 	Vector4 getPoistion() {
@@ -110,7 +119,23 @@ class InfCylender : public Entity {
 
 };
 
-class Light {
+class Light : Entity
+{
+	Ray4 LightRay;
+
+	public :
+	Light(Ray4 r):LightRay(r) {
+
+	}
+
+	Light() {
+		LightRay = Ray4();
+	}
+
+	Ray4 getRay() {
+		return LightRay;
+	}
+
 
 };
 
@@ -128,6 +153,8 @@ class Scene {
 	float* getPixelColor(Ray4 ray,Camera cam);
 
 	void AddToScene(Entity* ent, float x, float y, float z);
+
+	void AddLightToScene(Light* ent);
 
 	~Scene() {
 		lstObject.clear();

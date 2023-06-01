@@ -329,7 +329,7 @@ Ray4 InfCylender::getNormal(const Vector4& impact, const Vector4& observator) co
 
 
 float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
-	float* color = new float[3] {0, 0, 0};
+	float* color = new float[3]{ cam.getBackgroundColor()[0], cam.getBackgroundColor()[1], cam.getBackgroundColor()[2] };
 	Vector4 impact;
 	float depth = 100000;
 	for (int i = 0; i < lstObject.size(); i++)
@@ -337,19 +337,32 @@ float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
 
 		if (lstObject[i]->Intersect(ray, impact) ) {
 
-			float tmp = cam.globalToLocal( impact).getNorme();
-			if (tmp >= depth) continue;
-
-			Ray4 vec = lstObject[i]->getNormal(impact, Vector4(0,0,0,1));
-			Vector4 normal = lstObject[i]->globalToLocal(vec.getDirection());
-			float N = normal.dot(Vector4(-1, 0, 0,0))*255;
-			N = std::clamp(N, 10.0f, 255.0f);
 		
-			depth = tmp;
-			
-			color[0] = N;
-			color[1] = N;
-			color[2] = N;
+
+			float tmp = cam.globalToLocal(impact).getNorme();
+			if (tmp >= depth) continue;
+			float n = 0;
+			for (int j = 0; j < lstLights.size(); j++)
+			{
+				
+	
+				Ray4 vec = lstObject[i]->getNormal(impact, cam.getPoistion());
+				Vector4 normal = lstObject[i]->globalToLocal(vec.getDirection());
+				Vector4 dir = lstLights[j]->getRay().getDirection();
+				float N = normal.dot(dir) * 255;
+				N = std::clamp(N, 0.0f, 255.0f);
+
+				depth = tmp;
+				
+				
+				n += N;
+				
+			}
+
+			color[0] = std::clamp(n, 0.0f,255.0f);
+			color[1] = std::clamp(n, 0.0f, 255.0f);
+			color[2] = std::clamp(n, 0.0f, 255.0f);
+
 		}
 	}
 
@@ -359,4 +372,8 @@ float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
 void Scene::AddToScene(Entity* ent, float x, float y, float z) {
 	ent->translate(x, y, z);
 	lstObject.push_back(ent);
+}
+
+void Scene::AddLightToScene(Light* l) {
+	lstLights.push_back(l);
 }
