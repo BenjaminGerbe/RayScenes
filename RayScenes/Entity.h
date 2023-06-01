@@ -4,6 +4,11 @@
 #include "Maths.cpp"
 #endif
 
+#ifndef __MAT__
+#define __MAT__
+#include "Material.h"
+#endif
+
 
 #include <vector>
 enum Objects {
@@ -13,10 +18,11 @@ enum Objects {
 };
 
 class Entity {
-
+	protected:
 
 	Matrix<4,4> trans;
 	Matrix<4,4> transInv;
+	Material mat;
 
 	public:
 
@@ -25,6 +31,8 @@ class Entity {
 	void rotateX(float deg);
 	void rotateY(float deg);
 	void rotateZ(float deg);
+
+	Entity();
 
 	Vector<4> localToGlobal(const Vector<4>& v) const;
 	Vector4   localToGlobal(const Vector4& v) const;
@@ -38,7 +46,9 @@ class Entity {
 
 	virtual bool Intersect(const Ray4& ray, Vector4& impact)const;
 	virtual Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
-		
+
+	Material GetMat();
+	void SetMat(Material mat);
 };
 
 class Camera : public Entity{
@@ -152,7 +162,7 @@ class Scene {
 
 	float* getPixelColor(Ray4 ray,Camera cam);
 
-	void AddToScene(Entity* ent, float x, float y, float z);
+	void AddToScene(Entity* ent, Material mat, float x, float y, float z);
 
 	void AddLightToScene(Light* ent);
 

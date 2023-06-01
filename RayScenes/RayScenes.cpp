@@ -12,6 +12,7 @@ int main()
 	unsigned char* image = new unsigned char[1920 * 1080];
 
 	Camera cam(300, 300,5);
+	cam.rotateX(30 *( M_PI/180));
 	cam.translate(0, 0, -10);
 	Image img(cam.getWidth(),cam.getHeight(), 3);
 	
@@ -19,10 +20,10 @@ int main()
 	std::vector<unsigned char*> arr = img.getImage();
 	Scene scene;
 
+	Material basic(Color(100,10,10),Color(255,180,180),Color(1,1,1));
 
-
-	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), 1, 0, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), 0, 1, 0);
+	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 1, 0, 0);
+	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 0, 1, 0);
 	
 	Ray4 rL2(Vector4(0, 0, 1, 1), Vector4(1, 1, 0, 0).normalized());
 	Light* l2 = new Light(rL2);
@@ -32,7 +33,6 @@ int main()
 	Light* l = new Light(rL);
 	scene.AddLightToScene(l);
 
-	
 
 	float* color = new float[3]{ 32.0f,164.0f,196.0f };
 	cam.setColor(color);

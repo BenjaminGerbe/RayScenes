@@ -13,6 +13,11 @@
 #include "Maths.cpp"
 #endif
 
+#ifndef __MAT__
+#define __MAT__
+#include "Material.h"
+#endif
+
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -21,6 +26,8 @@
 #include "stb_image_write.h"
 
 #include "Image.h"
+
+
 
 #include "Entity.h"
 
