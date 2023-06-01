@@ -34,7 +34,7 @@ int main()
 
 			Ray4 r = cam.getRay(x, y);
 
-			float* c = scene.getPixelColor(r);
+			float* c = scene.getPixelColor(r,cam);
 
 			arr[j * img.getWidth() + i][0] = c[0];
 			arr[j * img.getWidth() + i][1] = c[1];

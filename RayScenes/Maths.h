@@ -440,7 +440,15 @@ Vector<N> operator*(  float& b,  Vector<N>& vec) {
     return vec * b;
 }
 
+template<int N>
+float distance(Vector<N> a, Vector<N> b) {
+    float d = 0;
 
-
+    for (int i = 0; i < N; i++)
+    {
+        d += a[i] - b[i];
+    }
+    return std::sqrtf(d);
+}
 
 #endif

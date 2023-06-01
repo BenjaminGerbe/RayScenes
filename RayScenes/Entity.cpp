@@ -328,17 +328,25 @@ Ray4 InfCylender::getNormal(const Vector4& impact, const Vector4& observator) co
 }
 
 
-float* Scene:: getPixelColor(Ray4 ray) {
+float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
 	float* color = new float[3] {0, 0, 0};
 	Vector4 impact;
+	float depth = 100000;
 	for (int i = 0; i < lstObject.size(); i++)
 	{
-		if (lstObject[i]->Intersect(ray, impact)) {
+
+		if (lstObject[i]->Intersect(ray, impact) ) {
+
+			float tmp = cam.globalToLocal( impact).getNorme();
+			if (tmp >= depth) continue;
+
 			Ray4 vec = lstObject[i]->getNormal(impact, Vector4(0,0,0,1));
-			
-			float N = vec.getDirection().dot(Vector4(1, 0, 0,0))*255;
+			Vector4 normal = lstObject[i]->globalToLocal(vec.getDirection());
+			float N = normal.dot(Vector4(-1, 0, 0,0))*255;
 			N = std::clamp(N, 10.0f, 255.0f);
 		
+			depth = tmp;
+			
 			color[0] = N;
 			color[1] = N;
 			color[2] = N;

@@ -63,6 +63,10 @@ public:
 		return width;
 	}
 
+	Vector4 getPoistion() {
+		return localToGlobal(Vector4(0, 0, 0, 1));
+	}
+
 	Ray4 getRay(float x, float y)const;
 
 };
@@ -121,7 +125,7 @@ class Scene {
 		lstLights = std::vector<Light*>();
 	};
 
-	float* getPixelColor(Ray4 ray);
+	float* getPixelColor(Ray4 ray,Camera cam);
 
 	void AddToScene(Entity* ent, float x, float y, float z);
 
