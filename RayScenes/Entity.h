@@ -36,6 +36,14 @@ class Entity {
 
 	Vector<4> localToGlobal(const Vector<4>& v) const;
 	Vector4   localToGlobal(const Vector4& v) const;
+	
+	Matrix<4, 4> getTrans() {
+		return trans;
+	}
+
+	Matrix<4, 4> getTransInv() {
+		return transInv;
+	}
 
 
 	Vector<4> globalToLocal(const Vector<4>& v) const;
@@ -129,7 +137,7 @@ class InfCylender : public Entity {
 
 };
 
-class Light : Entity
+class Light : public Entity
 {
 	Ray4 LightRay;
 
@@ -165,6 +173,12 @@ class Scene {
 	void AddToScene(Entity* ent, Material mat, float x, float y, float z);
 
 	void AddLightToScene(Light* ent);
+
+	bool isOnShadow(Vector4 point,Light l,Entity* ent);
+
+	Entity* getEntity(int i) {
+		return lstObject[i];
+	}
 
 	~Scene() {
 		lstObject.clear();

@@ -50,9 +50,8 @@ void Entity::rotateX(float deg) {
 	rot.setAt(2, 2, std::cos(deg));
 
 
-	this->trans = rot * this->trans;
-
-	this->transInv = trans.getInverse();
+	trans = rot * trans;
+	transInv = trans.getInverse();
 }
 
 void Entity::rotateY(float deg) {
@@ -64,9 +63,9 @@ void Entity::rotateY(float deg) {
 	rot.setAt(2, 2, std::cos(deg));
 
 
-	this->trans = rot * this->trans;
+	trans = rot * trans;
 
-	this->transInv = trans.getInverse();
+	transInv = trans.getInverse();
 }
 
 
@@ -79,9 +78,9 @@ void Entity::rotateZ(float deg) {
 	rot.setAt(1, 1, std::cos(deg));
 
 
-	this->trans = rot * this->trans;
+	trans = rot * trans;
 
-	this->transInv = trans.getInverse();
+	transInv = trans.getInverse();
 }
 
 Entity::Entity()
@@ -104,6 +103,7 @@ Vector<4> Entity::globalToLocal(const Vector<4>& v) const
 	
 	return this->trans * v;
 }
+
 
 Vector4 Entity::globalToLocal(const Vector4& v) const
 {
@@ -184,10 +184,10 @@ Ray4 Plan::getNormal(const Vector4& impact, const Vector4& observator) const
 	Vector4 p = globalToLocal(impact);
 	Vector4 obs = globalToLocal(observator);
 
-	Vector4 vec(0, 0, -1,0);
+	Vector4 vec(0, 0, 1,0);
 
 	if (p[2] < obs[2]) {
-		vec.setAt(2, 1);
+		vec = -vec;
 	}
 
 	Ray4 r(impact, localToGlobal(vec));
@@ -359,24 +359,27 @@ float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
 			Color src( lstObject[i]->GetMat().getAmbiante().r,  lstObject[i]->GetMat().getAmbiante().g,  lstObject[i]->GetMat().getAmbiante().b);
 			for (int j = 0; j < lstLights.size(); j++)
 			{
+
+				Ray4 vec = lstObject[i]->globalToLocal( lstObject[i]->getNormal(impact, cam.getPoistion()));
+				Vector4 normal = (vec.getDirection().normalized());
 				
-	
-				Ray4 vec = lstObject[i]->getNormal(impact, cam.getPoistion());
-				Vector4 normal = lstObject[i]->globalToLocal(vec.getDirection());
-				Vector4 dir = lstLights[j]->getRay().getDirection();
+			
+				Vector4 dir = lstObject[i]->globalToLocal( lstLights[j]->getRay().getDirection()).normalized();
+				
 				float N = normal.dot(dir) ;
 				N = std::clamp(N, 0.0f, 255.0f);
 
-			
-
 				depth = tmp;
 				
-				
+				if (isOnShadow(impact, *lstLights[j] ,lstObject[i])) N = 0;
+
 				n += N;
 				
+
 			}
 
 			Color diffuse = lstObject[i]->GetMat().getDiffuse();
+
 
 			color[0] = std::clamp(src.r + diffuse.r*n , 0.0f,255.0f);
 			color[1] = std::clamp(src.g + diffuse.g * n, 0.0f, 255.0f);
@@ -386,6 +389,23 @@ float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
 	}
 
 	return color;
+}
+
+
+bool Scene::isOnShadow(Vector4 point,Light l, Entity* ent) {
+	bool result = false;
+	for (int i = 0; i < lstObject.size(); i++)
+	{
+		if (ent == lstObject[i]) continue;
+		Ray4 r(point, l.getRay().getDirection());
+		Vector4 vec;
+		if (lstObject[i]->Intersect(r, vec)) {
+			result = true;
+		}
+		
+	}
+
+	return result;
 }
 
 void Scene::AddToScene(Entity* ent, Material mat, float x, float y, float z) {

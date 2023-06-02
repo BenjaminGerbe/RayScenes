@@ -6,14 +6,12 @@
 
 int main()
 {
-	int w = 50;
-	int h = 50;
-	int comp = 3;
-	unsigned char* image = new unsigned char[1920 * 1080];
 
-	Camera cam(300, 300,5);
-	cam.rotateX(30 *( M_PI/180));
-	cam.translate(0, 0, -10);
+	Camera cam(1920, 1920,5);
+	cam.rotateX(-30 * ( M_PI/180.0f));
+
+
+	cam.translate(0, 0, -20);
 	Image img(cam.getWidth(),cam.getHeight(), 3);
 	
 
@@ -22,16 +20,21 @@ int main()
 
 	Material basic(Color(100,10,10),Color(255,180,180),Color(1,1,1));
 
-	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 1, 0, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 0, 1, 0);
-	
-	Ray4 rL2(Vector4(0, 0, 1, 1), Vector4(1, 1, 0, 0).normalized());
-	Light* l2 = new Light(rL2);
-	scene.AddLightToScene(l2);
+	Material White(Color(60, 60, 100),Color(255, 255, 255),Color(1,1,1));
+
+	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 1, .5, 0);
+	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 0, 1.8, .5);
+	scene.AddToScene(dynamic_cast<Entity*>(new Square()), White, 0, 0, 0);
+
+	scene.getEntity(2)->rotateX(90 *(M_PI / 180.0f));
+	scene.getEntity(2)->translate(0,0,-.5);
+	scene.getEntity(2)->scale(.2);
+
 
 	Ray4 rL(Vector4(0,1,1,1),Vector4(0,-1,0,0).normalized());
 	Light* l = new Light(rL);
 	scene.AddLightToScene(l);
+
 
 
 	float* color = new float[3]{ 32.0f,164.0f,196.0f };
@@ -47,6 +50,9 @@ int main()
 			float x = (float)i / img.getWidth();
 			float y = (float)j / img.getHeight();
 
+			std::cout << (idx / (float)(img.getWidth() * img.getHeight())) * 100 <<" %" << std::endl;
+
+
 			Ray4 r = cam.getRay(x, y);
 			float* c = scene.getPixelColor(r,cam);
 
@@ -57,7 +63,6 @@ int main()
 			
 		}
 	}
-
 
 
 	stbi_write_png("output.png", img.getWidth(), img.getHeight(), img.getDim(), &img.getFlatArray()[0], img.getWidth() * img.getDim());
