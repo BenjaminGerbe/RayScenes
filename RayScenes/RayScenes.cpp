@@ -7,9 +7,9 @@
 int main()
 {
 
-	Camera cam(500, 500,5);
-	cam.rotateX(-30 * ( M_PI/180.0f));
+	Camera cam(250, 250,5);
 
+	cam.rotateY(-180 * (M_PI / 180.0f));
 
 	cam.translate(0, 0, -20);
 	Image img(cam.getWidth(),cam.getHeight(), 3);
@@ -18,7 +18,7 @@ int main()
 	std::vector<unsigned char*> arr = img.getImage();
 	Scene scene;
 
-	Material basic(Color(100,10,10),Color(180,50,50),Color(255,255,255),1000);
+	Material basic(Color(100,10,10),Color(180,50,50),Color(255,255,255),64);
 
 	Material White(Color(60, 60, 100),Color(255, 255, 255),Color(255,255,255),1);
 
@@ -47,10 +47,8 @@ int main()
 		for (int j = 0; j < img.getHeight(); j++) {
 			idx++;
 
-
 			float x = (float)i / img.getWidth();
 			float y = (float)j / img.getHeight();
-
 
 			if (idx % (img.getHeight()*10) == 0) {
 				std::cout << (idx / (float)(img.getWidth() * img.getHeight())) * 100 << " %" << std::endl;

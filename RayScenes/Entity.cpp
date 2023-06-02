@@ -405,18 +405,21 @@ float* Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 			Ray4 vec = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()));
 			Vector4 normal = (vec.getDirection().normalized());
 			Vector4 R(0,0,0,0);
+			float  v = 0;
 			for (int j = 0; j < lstLights.size(); j++)
 			{
 
 
-				Vector4 dir = lstObject[i]->globalToLocal(lstLights[j]->getRay().getDirection()).normalized();
+				Vector4 dir = lstObject[i]->globalToLocal((lstLights[j]->getRay().getDirection())).normalized();
 
 				float N = normal.dot(dir);
 				N = std::clamp(N, 0.0f, 255.0f);
 				depth = tmp;
 				if (isOnShadow(impact, *lstLights[j], lstObject[i])) N = 0;
 
-				R = normal*(N)*2.0f - (dir);
+				R = (normal*(N)*2.0f) - (dir);
+				v = dir.dot(Vector4(0, 1, 0,0));
+			
 				n += N;
 			}
 
@@ -425,9 +428,9 @@ float* Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 			Color diffuse = lstObject[i]->GetMat().getDiffuse();
 			Color speculaire = lstObject[i]->GetMat().getSpeculaire();
 			float s = lstObject[i]->GetMat().getShininess();
-			src.r = src.r + (diffuse.r * n) ;
-			src.g = src.g + diffuse.r * n + speculaire.g * std::pow(R.dot(V),1.0f/s);
-			src.b = src.b + diffuse.b * n + speculaire.b * std::pow(R.dot(V),1.0f/s);
+			src.r = src.r + (diffuse.r * n) + speculaire.g * std::pow(R.dot(V), s);
+			src.g = src.g + diffuse.r * n + speculaire.g * std::pow(R.dot(V),s);
+			src.b = src.b + diffuse.b * n + speculaire.b * std::pow(R.dot(V),s);
 		
 			color[0] = std::clamp(src.r, 0.0f, 255.0f);
 			color[1] = std::clamp(src.g, 0.0f, 255.0f);
