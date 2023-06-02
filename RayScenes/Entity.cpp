@@ -343,7 +343,7 @@ Ray4 InfCylender::getNormal(const Vector4& impact, const Vector4& observator) co
 }
 
 
-float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
+float* Scene:: getPixelColorLambert(Ray4 ray,Camera cam) {
 	float* color = new float[3]{ cam.getBackgroundColor()[0], cam.getBackgroundColor()[1], cam.getBackgroundColor()[2] };
 	Vector4 impact;
 	float depth = 100000;
@@ -368,14 +368,10 @@ float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
 				
 				float N = normal.dot(dir) ;
 				N = std::clamp(N, 0.0f, 255.0f);
-
 				depth = tmp;
-				
 				if (isOnShadow(impact, *lstLights[j] ,lstObject[i])) N = 0;
 
 				n += N;
-				
-
 			}
 
 			Color diffuse = lstObject[i]->GetMat().getDiffuse();
@@ -390,6 +386,59 @@ float* Scene:: getPixelColor(Ray4 ray,Camera cam) {
 
 	return color;
 }
+
+float* Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
+	float* color = new float[3]{ cam.getBackgroundColor()[0], cam.getBackgroundColor()[1], cam.getBackgroundColor()[2] };
+	Vector4 impact;
+	float depth = 100000;
+	for (int i = 0; i < lstObject.size(); i++)
+	{
+
+		if (lstObject[i]->Intersect(ray, impact)) {
+
+
+			float tmp = cam.globalToLocal(impact).getNorme();
+			if (tmp >= depth) continue;
+			float n = 0;
+			Color src(lstObject[i]->GetMat().getAmbiante().r, lstObject[i]->GetMat().getAmbiante().g, lstObject[i]->GetMat().getAmbiante().b);
+
+			Ray4 vec = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()));
+			Vector4 normal = (vec.getDirection().normalized());
+			Vector4 R(0,0,0,0);
+			for (int j = 0; j < lstLights.size(); j++)
+			{
+
+
+				Vector4 dir = lstObject[i]->globalToLocal(lstLights[j]->getRay().getDirection()).normalized();
+
+				float N = normal.dot(dir);
+				N = std::clamp(N, 0.0f, 255.0f);
+				depth = tmp;
+				if (isOnShadow(impact, *lstLights[j], lstObject[i])) N = 0;
+
+				R = normal*(N)*2.0f - (dir);
+				n += N;
+			}
+
+			Vector4 V = (ray.getOrigin() - impact).normalized();
+
+			Color diffuse = lstObject[i]->GetMat().getDiffuse();
+			Color speculaire = lstObject[i]->GetMat().getSpeculaire();
+			float s = lstObject[i]->GetMat().getShininess();
+			src.r = src.r + (diffuse.r * n) ;
+			src.g = src.g + diffuse.r * n + speculaire.g * std::pow(R.dot(V),1.0f/s);
+			src.b = src.b + diffuse.b * n + speculaire.b * std::pow(R.dot(V),1.0f/s);
+		
+			color[0] = std::clamp(src.r, 0.0f, 255.0f);
+			color[1] = std::clamp(src.g, 0.0f, 255.0f);
+			color[2] = std::clamp(src.b, 0.0f, 255.0f);
+
+		}
+	}
+
+	return color;
+}
+
 
 
 bool Scene::isOnShadow(Vector4 point,Light l, Entity* ent) {

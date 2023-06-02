@@ -140,14 +140,19 @@ class InfCylender : public Entity {
 class Light : public Entity
 {
 	Ray4 LightRay;
+	Color LightColor;
+
 
 	public :
-	Light(Ray4 r):LightRay(r) {
+
+	Light(Ray4 r, Color c) :LightRay(r),LightColor(c) {
 
 	}
 
 	Light() {
 		LightRay = Ray4();
+
+		LightColor = Color(255, 255, 255);
 	}
 
 	Ray4 getRay() {
@@ -168,7 +173,8 @@ class Scene {
 		lstLights = std::vector<Light*>();
 	};
 
-	float* getPixelColor(Ray4 ray,Camera cam);
+	float* getPixelColorLambert(Ray4 ray,Camera cam);
+	float* getPixelColorPhong(Ray4 ray,Camera cam);
 
 	void AddToScene(Entity* ent, Material mat, float x, float y, float z);
 

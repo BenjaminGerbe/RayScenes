@@ -8,6 +8,8 @@ public:
 	 float g;
 	 float b;
 
+	 
+
 	float getR() {
 		return r;
 	};
@@ -33,9 +35,10 @@ class Material {
 	Color ambiante;
 	Color diffuse;
 	Color speculaire;
+	float shininess;
 
 public:
-	Material(Color a, Color d, Color s) :ambiante(a), diffuse(d), speculaire(s) {};
+	Material(Color a, Color d, Color s,float si) :ambiante(a), diffuse(d), speculaire(s),shininess(si) {};
 
 	Material();
 
@@ -43,8 +46,16 @@ public:
 		return ambiante;
 	}
 
+	Color getSpeculaire() {
+		return speculaire;
+	}
+
 	Color getDiffuse() {
 		return diffuse;
+	}
+
+	float getShininess() {
+		return shininess;
 	}
 
 };
