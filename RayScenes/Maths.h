@@ -211,6 +211,8 @@ class Vector {
         return v;
     }
 
+    
+
     template<int H, int W>
     friend Vector<W> operator*(const Matrix<H, W>& t, const Vector<W>& m);
 
@@ -320,6 +322,13 @@ public:
     float getW() {
         return Vector::getAt(3);
     };
+
+    Vector4 operator*(float scalar) const {
+        return Vector4(getAt(0) * scalar, getAt(1) * scalar, getAt(2) * scalar, getAt(3) * scalar);
+    }
+
+
+
 
 };
 
@@ -439,6 +448,9 @@ template<int N>
 Vector<N> operator*(  float& b,  Vector<N>& vec) {
     return vec * b;
 }
+
+
+
 
 template<int N>
 float distance(Vector<N> a, Vector<N> b) {

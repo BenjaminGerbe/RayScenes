@@ -2,72 +2,91 @@
 //
 
 #include "RayScenes.h"
-
+#include <omp.h>
+#include <chrono>
 
 int main()
 {
 
-	Camera cam(250, 250,5);
+	
 
-	cam.rotateY(-180 * (M_PI / 180.0f));
+	Camera cam(300, 300,5);
 
-	cam.translate(0, 0, -20);
+	cam.rotateX(-30* (M_PI / 180.0f));
+
+	cam.translate(0, 0, -7);
 	Image img(cam.getWidth(),cam.getHeight(), 3);
 	
 
 	std::vector<unsigned char*> arr = img.getImage();
 	Scene scene;
 
-	Material basic(Color(100,10,10),Color(180,50,50),Color(255,255,255),64);
+	Material* basic = new Material(Color(1, 1, 1),Color(255, 255, 255),Color(200,200, 200),50);
 
-	Material White(Color(60, 60, 100),Color(255, 255, 255),Color(255,255,255),1);
 
-	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 1, .5, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 0, 1.8, .5);
+	basic->setColorMap(new Image("Materials/Grass/colorMap.jpg"));
+	basic->setNormalMap(new Image("Materials/Grass/normalMap.jpg"));
+
+
+	Material* White = new Material(Color(60, 60, 60),Color(180, 180, 180),Color(255,255,255),1);
+
+	
+	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 0, 0, 0);
 	scene.AddToScene(dynamic_cast<Entity*>(new Square()), White, 0, 0, 0);
 
-	scene.getEntity(2)->rotateX(90 *(M_PI / 180.0f));
-	scene.getEntity(2)->translate(0,0,-.5);
-	scene.getEntity(2)->scale(.2);
+	scene.getEntity(1)->rotateX(90 *(M_PI / 180.0f));
+	scene.getEntity(1)->translate(0,0,-.5);
+	scene.getEntity(1)->scale(.2);
+	
 
 
 
+	Ray4 rL(Vector4(0, 100, -2, 1), Vector4(0, 2, -.5, -.3).normalized());
+	Light* l = new Light(rL, Color(255.0f, 255.0f, 255.0f), Color(200.0f, 200.0f, 200.0f));
+	scene.AddLightToScene(l);
 
-	Ray4 rL2(Vector4(0, 1, 1, 1), Vector4(2, -1, 3, 0).normalized());
-	Light* l2 = new Light(rL2, Color(255, 255, 255));
-	scene.AddLightToScene(l2);
 
 
-	float* color = new float[3]{ 32.0f,164.0f,196.0f };
-	cam.setColor(color);
+	Color background (32.0f,164.0f,196.0f);
+	cam.setColor(background);
 
 
 	int idx = 0;
-	for (int i = 0; i < img.getWidth(); i++) {
-		for (int j = 0; j < img.getHeight(); j++) {
+
+	int width = img.getWidth();
+	int height = img.getHeight();
+
+	auto start = std::chrono::system_clock::now();
+
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < height; j++) {
 			idx++;
 
-			float x = (float)i / img.getWidth();
-			float y = (float)j / img.getHeight();
+			float x = (float)i / width;
+			float y = (float)j / height;
 
-			if (idx % (img.getHeight()*10) == 0) {
+			if (idx % (height) == 0) {
 				std::cout << (idx / (float)(img.getWidth() * img.getHeight())) * 100 << " %" << std::endl;
 			}
 			
-
-
 			Ray4 r = cam.getRay(x, y);
-			float* c = scene.getPixelColorPhong(r,cam);
+			Color c = scene.getPixelColorPhong(r,cam);
 
-			arr[j * img.getWidth() + i][0] = c[0];
-			arr[j * img.getWidth() + i][1] = c[1];
-			arr[j * img.getWidth() + i][2] = c[2];
+			arr[j * width + i][0] = c.r;
+			arr[j * width + i][1] = c.g;
+			arr[j * width + i][2] = c.b;
 
 			
 		}
-	}
+	}	
+	
+	auto end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	std::cout << elapsed_seconds.count() << std::endl;
 
 
-	stbi_write_png("output.png", img.getWidth(), img.getHeight(), img.getDim(), &img.getFlatArray()[0], img.getWidth() * img.getDim());
+	img.WriteImage("output.png");
+
+
 	return 0;
 }

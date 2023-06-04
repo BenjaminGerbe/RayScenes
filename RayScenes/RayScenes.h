@@ -8,10 +8,11 @@
 #include <string>
 #include <vector>
 
-#ifndef __MATH__
-#define __MATH__
-#include "Maths.cpp"
-#endif
+
+#define STB_IMAGE_IMPLEMENTATION
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
 
 #ifndef __MAT__
 #define __MAT__
@@ -19,13 +20,22 @@
 #endif
 
 
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
+#ifndef __IMAGE__
+#define __IMAGE__
 #include "Image.h"
+#endif
+
+
+#ifndef __MATH__
+#define __MATH__
+#include "Maths.cpp"
+#endif
+
+
+
+
+
+
 
 
 

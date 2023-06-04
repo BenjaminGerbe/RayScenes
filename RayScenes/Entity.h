@@ -22,7 +22,7 @@ class Entity {
 
 	Matrix<4,4> trans;
 	Matrix<4,4> transInv;
-	Material mat;
+	Material* mat;
 
 	public:
 
@@ -55,15 +55,21 @@ class Entity {
 	virtual bool Intersect(const Ray4& ray, Vector4& impact)const;
 	virtual Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 
-	Material GetMat();
-	void SetMat(Material mat);
+	virtual Vector4 getTextureCoordinates(const Vector4& p)const;
+
+	Material* GetMat();
+
+	Material* GetMat() const;
+
+
+	void SetMat(Material* mat);
 };
 
 class Camera : public Entity{
 	float height;
 	float width;
 	float focal;
-	float* color;
+	Color color;
 
 public:
 
@@ -82,11 +88,11 @@ public:
 		return width;
 	}
 
-	float* getBackgroundColor() {
+	Color getBackgroundColor() {
 		return color;
 	}
 
-	void setColor(float* c) {
+	void setColor(Color c) {
 		color = c;
 	}
 
@@ -104,7 +110,7 @@ class Plan : public Entity{
 	public:
 	Plan();
 
-
+	
 	bool  Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
@@ -113,6 +119,8 @@ class Square : public Entity {
 public :
 	Square();
 
+
+	Vector4 getTextureCoordinates(const Vector4& p)const;
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
@@ -121,8 +129,9 @@ class Sphere : public Entity {
 	public:
 	Sphere();
 
-	bool Intersect(const Ray4& ray, Vector4& impact) const;
 
+	Vector4 getTextureCoordinates(const Vector4& p)const;
+	bool Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 
 };
@@ -140,23 +149,33 @@ class InfCylender : public Entity {
 class Light : public Entity
 {
 	Ray4 LightRay;
-	Color LightColor;
-
+	Color DiffuseColor;
+	Color SpecularColor;
 
 	public :
 
-	Light(Ray4 r, Color c) :LightRay(r),LightColor(c) {
+	Light(Ray4 r, Color c, Color s) :LightRay(r), DiffuseColor(c), SpecularColor(s){
 
 	}
 
 	Light() {
 		LightRay = Ray4();
 
-		LightColor = Color(255, 255, 255);
+		DiffuseColor = Color(255, 255, 255);
+		SpecularColor = Color(255, 255, 255);
 	}
 
 	Ray4 getRay() {
 		return LightRay;
+	}
+
+	Color getDiffuseColor() {
+		return DiffuseColor;
+	}
+
+
+	Color getSpecularColor() {
+		return SpecularColor;
 	}
 
 
@@ -173,10 +192,10 @@ class Scene {
 		lstLights = std::vector<Light*>();
 	};
 
-	float* getPixelColorLambert(Ray4 ray,Camera cam);
-	float* getPixelColorPhong(Ray4 ray,Camera cam);
+	Color getPixelColorLambert(Ray4 ray,Camera cam);
+	Color getPixelColorPhong(Ray4 ray,Camera cam);
 
-	void AddToScene(Entity* ent, Material mat, float x, float y, float z);
+	void AddToScene(Entity* ent, Material* mat, float x, float y, float z);
 
 	void AddLightToScene(Light* ent);
 

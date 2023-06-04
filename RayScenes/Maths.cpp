@@ -1,5 +1,5 @@
 #include "Maths.h"
-
+#include <algorithm>
 
 // Matrix implementation //
 
@@ -264,7 +264,7 @@ template<int N>
 float Vector<N>::getNorme() {
 
     float sum = 0.0;
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < std::clamp(N, 1, 3); i++)
     {
         sum += tab[i] * tab[i];
     }
@@ -276,7 +276,7 @@ template<int N>
 Vector<N> Vector<N>::normalized() {
     float norme = getNorme();
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < std::clamp(N,1,3); i++)
     {
         tab[i] = tab[i] / norme;
     }

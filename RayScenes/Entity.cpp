@@ -1,5 +1,8 @@
 #include "Entity.h"
+#include <limits>
 #include <algorithm>
+#include <omp.h>
+#include <utility>
 
 Ray4 Camera::getRay(float x, float y) const
 {
@@ -153,13 +156,25 @@ Ray4 Entity::getNormal(const Vector4& impact, const Vector4& observator) const
 	return Ray4();
 }
 
-Material Entity::GetMat()
+Vector4 Entity::getTextureCoordinates(const Vector4& p) const
+{
+	return Vector4();
+}
+
+Material* Entity::GetMat()
 {
 	return mat;
 }
 
+Material* Entity::GetMat() const
+{
+	return this->mat;
+}
 
-void Entity::SetMat(Material mat)
+
+
+
+void Entity::SetMat(Material* mat)
 {
 	this->mat = mat;
 }
@@ -167,6 +182,13 @@ void Entity::SetMat(Material mat)
 Plan::Plan()
 {
 
+}
+
+Vector4 Square::getTextureCoordinates(const Vector4& p) const
+{
+	Vector4 point = globalToLocal(p);
+	Vector4 uv((point.x + 1.f) / 2.f, (point.y + 1.f) / 2.f, 0,1.0);
+	return uv;
 }
 
 bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
@@ -225,7 +247,7 @@ Ray4 Square::getNormal(const Vector4& impact, const Vector4& observator) const
 	Vector4 vec(0, 0, -1, 0);
 
 	if (p[2] < obs[2]) {
-		vec.setAt(2, 1);
+		vec = -vec;
 	}
 
 	Ray4 r(impact, localToGlobal(vec));
@@ -235,6 +257,15 @@ Ray4 Square::getNormal(const Vector4& impact, const Vector4& observator) const
 
 Sphere::Sphere()
 {
+}
+
+Vector4 Sphere::getTextureCoordinates(const Vector4& p) const
+{
+	Vector4 posLocal = globalToLocal(p);
+	float u = 0.5 + atan2(posLocal.z, posLocal.x) / (2 * 3.1415926);
+	float v = 0.5 - asin(posLocal.y) / 3.1415926;
+
+	return Vector4(u, v,0.0,1.0);
 }
 
 bool Sphere::Intersect(const Ray4& ray, Vector4& impact) const
@@ -275,19 +306,38 @@ bool Sphere::Intersect(const Ray4& ray, Vector4& impact) const
 
 Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 {
+	Material* mat = GetMat();
+	Vector4 vec;
 	Vector4 p = globalToLocal(impact);
 	Vector4 obs = globalToLocal(observator);
 
-
-	Vector4 vec;
 	vec = p;
+
+
+	if (mat->getHasNormalMap()) {
+
+		Vector4 coord =getTextureCoordinates(impact);
+		Image* texture = mat->getNormalMap();
+		unsigned char* us = (*texture).getColor(coord.x * texture->getWidth(), coord.y * texture->getWidth());
+		Vector4 v(us[0]/255.0f, us[1] / 255.0f, us[2] / 255.0f, 0.0);
+
+		vec.setAt(0, vec.x * v.x);
+		vec.setAt(1, vec.y * v.y);
+		vec.setAt(2, vec.z * v.z);
+
+		vec = vec.normalized();
+
+	}
+
 
 	if (obs[0] * obs[0] + obs[1] * obs[1] + obs[2] * obs[2] <= 1) {
 		vec = -vec;
 	}
 
+	vec.setAt(3, 0);
 	vec = localToGlobal(vec);
 	vec = vec.normalized();
+
 
 
 	Ray4 r(impact, vec);
@@ -343,113 +393,140 @@ Ray4 InfCylender::getNormal(const Vector4& impact, const Vector4& observator) co
 }
 
 
-float* Scene:: getPixelColorLambert(Ray4 ray,Camera cam) {
-	float* color = new float[3]{ cam.getBackgroundColor()[0], cam.getBackgroundColor()[1], cam.getBackgroundColor()[2] };
+Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam) {
+	Color src(1,1,1);
 	Vector4 impact;
-	float depth = 100000;
+	float depth = std::numeric_limits<float>::max();
+	bool Itr = false;
 	for (int i = 0; i < lstObject.size(); i++)
 	{
-
+		
 		if (lstObject[i]->Intersect(ray, impact) ) {
 
-
+			Itr = true;
 			float tmp = cam.globalToLocal(impact).getNorme();
-			if (tmp >= depth) continue;
-			float n = 0;
-			Color src( lstObject[i]->GetMat().getAmbiante().r,  lstObject[i]->GetMat().getAmbiante().g,  lstObject[i]->GetMat().getAmbiante().b);
+			
+			if (tmp > depth) {
+				continue;
+			}
+			
+			
+			float NL = 0;
+			Vector4 N = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()).getDirection()).normalized();
+			std::cout << N << std::endl;
+			Material* mat = lstObject[i]->GetMat();
+			depth = tmp;
+			src = mat->getAmbiante();
 			for (int j = 0; j < lstLights.size(); j++)
 			{
+				Light light = *lstLights[j];
+				Vector4 L = -lstObject[i]->globalToLocal(light.getRay().getDirection()).normalized();
+				NL += N.dot(L);
+				NL = std::clamp(NL, 0.0f, 1.0f);
 
-				Ray4 vec = lstObject[i]->globalToLocal( lstObject[i]->getNormal(impact, cam.getPoistion()));
-				Vector4 normal = (vec.getDirection().normalized());
-				
-			
-				Vector4 dir = lstObject[i]->globalToLocal( lstLights[j]->getRay().getDirection()).normalized();
-				
-				float N = normal.dot(dir) ;
-				N = std::clamp(N, 0.0f, 255.0f);
-				depth = tmp;
-				if (isOnShadow(impact, *lstLights[j] ,lstObject[i])) N = 0;
+				if (isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
 
-				n += N;
+				Color cNL(NL, NL, NL);
+				cNL = cNL * 255.0f;
+		
+				Color nC(N.x, N.y, N.z);
+				nC = nC * 255.0f;
+
+				
+				src = src + ( mat->getDiffuse() * cNL * light.getDiffuseColor()) ;
 			}
-
-			Color diffuse = lstObject[i]->GetMat().getDiffuse();
-
-
-			color[0] = std::clamp(src.r + diffuse.r*n , 0.0f,255.0f);
-			color[1] = std::clamp(src.g + diffuse.g * n, 0.0f, 255.0f);
-			color[2] = std::clamp(src.b + diffuse.b * n, 0.0f, 255.0f);
-
 		}
+		
+
+		
 	}
 
-	return color;
+	if (!Itr) {
+		return cam.getBackgroundColor();
+	}
+
+	return src;
 }
 
-float* Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
-	float* color = new float[3]{ cam.getBackgroundColor()[0], cam.getBackgroundColor()[1], cam.getBackgroundColor()[2] };
+
+
+Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
+	
+	Color src(1, 1, 1);
 	Vector4 impact;
-	float depth = 100000;
+	float depth = std::numeric_limits<float>::max();
+	bool Itr = false;
+
+
+	float nMax = 0;
 	for (int i = 0; i < lstObject.size(); i++)
 	{
 
 		if (lstObject[i]->Intersect(ray, impact)) {
 
-
+			Itr = true;
 			float tmp = cam.globalToLocal(impact).getNorme();
-			if (tmp >= depth) continue;
-			float n = 0;
-			Color src(lstObject[i]->GetMat().getAmbiante().r, lstObject[i]->GetMat().getAmbiante().g, lstObject[i]->GetMat().getAmbiante().b);
 
-			Ray4 vec = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()));
-			Vector4 normal = (vec.getDirection().normalized());
-			Vector4 R(0,0,0,0);
-			float  v = 0;
-			for (int j = 0; j < lstLights.size(); j++)
-			{
-
-
-				Vector4 dir = lstObject[i]->globalToLocal((lstLights[j]->getRay().getDirection())).normalized();
-
-				float N = normal.dot(dir);
-				N = std::clamp(N, 0.0f, 255.0f);
-				depth = tmp;
-				if (isOnShadow(impact, *lstLights[j], lstObject[i])) N = 0;
-
-				R = (normal*(N)*2.0f) - (dir);
-				v = dir.dot(Vector4(0, 1, 0,0));
-			
-				n += N;
+			if (tmp > depth) {
+				continue;
 			}
 
-			Vector4 V = (ray.getOrigin() - impact).normalized();
 
-			Color diffuse = lstObject[i]->GetMat().getDiffuse();
-			Color speculaire = lstObject[i]->GetMat().getSpeculaire();
-			float s = lstObject[i]->GetMat().getShininess();
-			src.r = src.r + (diffuse.r * n) + speculaire.g * std::pow(R.dot(V), s);
-			src.g = src.g + diffuse.r * n + speculaire.g * std::pow(R.dot(V),s);
-			src.b = src.b + diffuse.b * n + speculaire.b * std::pow(R.dot(V),s);
+			float NL = 0;
+			Vector4 N = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()).getDirection()).normalized();
+			Material* mat = lstObject[i]->GetMat();
+			depth = tmp;
+
+
+			Vector4 coord = lstObject[i]->getTextureCoordinates(impact);
+			Image* texture = mat->getColorMap();
+			unsigned char* us = (*texture).getColor(coord.x * texture->getWidth(), coord.y * texture->getWidth());
+			Color cTexture(us[0], us[1], us[2]);
 		
-			color[0] = std::clamp(src.r, 0.0f, 255.0f);
-			color[1] = std::clamp(src.g, 0.0f, 255.0f);
-			color[2] = std::clamp(src.b, 0.0f, 255.0f);
+			src = mat->getAmbiante()* cTexture;
+			
+			for (int j = 0; j < lstLights.size(); j++)
+			{
+				Light light = *lstLights[j];
+				Vector4 L = -lstObject[i]->globalToLocal(light.getRay().getDirection()).normalized();
+				NL = N.dot(L);
+				NL = std::clamp(NL,0.0f,1.0f);
+			
 
+				if (isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
+
+				Vector4 R = (N*2.0f * NL ) - L;
+				Vector4 V = lstObject[i]->globalToLocal(cam.getPoistion() - impact).normalized();
+				float specular = pow(R.dot(V), mat->getShininess());
+
+				Color specColor = mat->getSpeculaire() * specular * light.getSpecularColor();
+
+				
+				src = src  +  (cTexture*mat->getDiffuse() * NL * light.getDiffuseColor()) + specColor;
+				
+			}
 		}
+
+
+
 	}
 
-	return color;
+	if (!Itr) {
+		return cam.getBackgroundColor();
+	}
+
+	return src;
 }
 
 
 
 bool Scene::isOnShadow(Vector4 point,Light l, Entity* ent) {
 	bool result = false;
+	
 	for (int i = 0; i < lstObject.size(); i++)
 	{
 		if (ent == lstObject[i]) continue;
-		Ray4 r(point, l.getRay().getDirection());
+		Ray4 r(point,-l.getRay().getDirection());
 		Vector4 vec;
 		if (lstObject[i]->Intersect(r, vec)) {
 			result = true;
@@ -460,7 +537,7 @@ bool Scene::isOnShadow(Vector4 point,Light l, Entity* ent) {
 	return result;
 }
 
-void Scene::AddToScene(Entity* ent, Material mat, float x, float y, float z) {
+void Scene::AddToScene(Entity* ent, Material* mat, float x, float y, float z) {
 	ent->translate(x, y, z);
 	ent->SetMat(mat);
 	lstObject.push_back(ent);
