@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\cygwin64\home\RayScenes\build\CMakeFiles\17bc0c2c12bdc4bbc53da5761f962645\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{3AB49E5F-2EC7-37C5-9E2C-67C62ABFCF6C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

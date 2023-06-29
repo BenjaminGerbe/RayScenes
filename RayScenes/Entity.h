@@ -117,6 +117,18 @@ public:
 };
 
 
+
+
+
+class Cube : public Entity {
+public:
+	Cube();
+
+	bool  Intersect(const Ray4& ray, Vector4& impact) const;
+	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
+	Vector4 getTextureCoordinates(const Vector4& p)const;
+};
+
 class Plan : public Entity{
 
 	public:
@@ -138,6 +150,18 @@ public :
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
+
+class Triangle : public Entity {
+	Vector3 p0;
+	Vector3 p1;
+	Vector3 p2;
+public : 
+	Triangle(Vector3 a, Vector3 b, Vector3 c) :p0(a), p1(b), p2(c) {};
+
+	bool Intersect(const Ray4& ray, Vector4& impact) const;
+	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
+};
+
 
 class Sphere : public Entity {
 	public:

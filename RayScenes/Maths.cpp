@@ -256,7 +256,6 @@ float Vector<N>::getAt(int i) const {
 template<int N>
 Vector<N>::~Vector()
 {
-
     delete[] tab;
 }
 

@@ -143,11 +143,8 @@ class Vector {
     ~Vector();
 
     Vector operator=(const Vector& vec) {
-
   
-    
-       Vector::~Vector();
-        tab = new float[N];
+       this->tab = new float[N];
 
         for (int i = 0; i < N; i++)
         {
@@ -267,6 +264,19 @@ class Vector3 : public Vector<3> {
     };
 
     float getZ() {
+        return Vector::getAt(2);
+    };
+
+
+    float getX() const {
+        return Vector::getAt(0);
+    };
+
+    float getY()const {
+        return Vector::getAt(1);
+    };
+
+    float getZ()const {
         return Vector::getAt(2);
     };
 

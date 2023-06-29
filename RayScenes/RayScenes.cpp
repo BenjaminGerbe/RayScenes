@@ -5,8 +5,42 @@
 #include <omp.h>
 #include <chrono>
 
-int main()
+int main(int argc, char* argv[])
 {
+
+	int argH = 300;
+	int argW = 300;
+	int argFov = 90;
+	char* sceneName;
+	
+
+	for (int i = 0; i < argc; i++) {	
+	
+		if (std::strcmp(argv[i],"-height") == 0) {
+			argH = std::atoi(argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-width") == 0) {
+			argW = std::atoi(argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-fov") == 0) {
+			argFov = std::atoi(argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-scene") == 0) {
+			argFov = std::atoi(argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-noShadow") == 0) {
+			
+		}
+
+		if (std::strcmp(argv[i], "-noTexture") == 0) {
+
+		}
+	}
+	
 
 	Material* basic = new Material(Color(60, 60, 60), Color(255, 255, 255), Color(200, 200, 200), 50);
 
@@ -22,7 +56,7 @@ int main()
 	White->setNormalMap(new Image("Materials/Floor/normal.jpg"));
 	White->setRoughnessMap(new Image("Materials/Floor/roughness.jpg"));
 	
-	Camera cam(1920, 1080, 5, 90, 0.1, 10000);
+	Camera cam(argW, argH, 5, argFov, 0.1, 10000);
 
 	cam.rotateY(-30 * (M_PI / 180.0f));
 	cam.rotateX(-30* (M_PI / 180.0f));
@@ -35,17 +69,12 @@ int main()
 	Scene scene;
 
 
-
-	
 	scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 0, 0, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Plan()), White, 0, 0, 0);
+	//scene.AddToScene(dynamic_cast<Entity*>(new Triangle(Vector3(-1,-1,0), Vector3(1, -1, 0),Vector3(-1, 1, 0))), basic, 0, 0, 0);
+	scene.AddToScene(dynamic_cast<Entity*>(new Cube()), basic, 0, 0, 0);
 
-	scene.getEntity(1)->rotateX(90 *(M_PI / 180.0f));
-	scene.getEntity(1)->translate(0,0,-.5);
-	scene.getEntity(1)->scale(.2);
-	
-
-
+	scene.getEntity(0)->rotateX(90.0f *(M_PI / 180.0f));
+	scene.getEntity(0)->scale(1);
 
 	Ray4 rL(Vector4(0, 100, -2, 1), Vector4(0, 1, -.3, -.3).normalized());
 	Light* l = new Light(rL, Color(255.0f, 255.0f, 255.0f), Color(150, 150, 150));
@@ -82,6 +111,7 @@ int main()
 			Ray4 r = cam.getRay(x, y);
 			Color c = scene.getPixelColorPhong(r,cam);
 
+
 			arr[j * width + i][0] = c.r;
 			arr[j * width + i][1] = c.g;
 			arr[j * width + i][2] = c.b;
@@ -101,8 +131,6 @@ int main()
 	strcpy(path, input.c_str());
 
 
-
-	img = img.blur(img);
 
 	img.WriteImage(path);
 

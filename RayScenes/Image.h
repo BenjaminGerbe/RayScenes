@@ -143,7 +143,7 @@ public:
     std::vector<unsigned char*> getImage() const { return this->image; };
 
     unsigned char* getColor(int i, int j) {
-        if (width == 0 || height == 0 ) {
+        if (height <= 0 || width <= 0) {
             return new unsigned char[3] {0, 0, 0};
         }
 
