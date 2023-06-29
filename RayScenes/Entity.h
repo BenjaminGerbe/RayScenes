@@ -163,6 +163,19 @@ public :
 };
 
 
+class Mesh : public Entity {
+	
+	std::vector<Triangle> Vertex;
+	std::vector<Vector3> Face;
+
+	public :
+	Mesh(std::vector<Vector3> v);
+
+	bool Intersect(const Ray4& ray, Vector4& impact) const;
+
+
+};
+
 class Sphere : public Entity {
 	public:
 	Sphere();

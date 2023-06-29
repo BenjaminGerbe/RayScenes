@@ -4,6 +4,7 @@
 #include <omp.h>
 #include <utility>
 
+
 Ray4 Camera::getRay(float x, float y) const
 {
 
@@ -667,4 +668,38 @@ Ray4 Triangle::getNormal(const Vector4& impact, const Vector4& observator) const
 	Ray4 r(impact, localToGlobal(vec));
 
 	return r;
+}
+
+
+Mesh::Mesh(std::vector<Vector3> v)
+{
+	std::cout << "vertex : " + v.size() << std::endl;
+	for (int i = 0; i < v.size()-3; i+=3)
+	{
+
+		Vector4 p1(v[i].x, v[i].y, v[i].z,1.0);
+		p1 = globalToLocal(p1);
+
+		Vector4 p2(v[i+1].x, v[i+1].y, v[i+1].z, 1.0);
+		p2 = globalToLocal(p2);
+
+		Vector4 p3(v[i + 2].x, v[i + 2].y, v[i + 2].z, 1.0);
+		p3 = globalToLocal(p3);
+
+		Triangle tr(Vector3(p1.x,p1.y,p1.z), Vector3(p2.x, p2.y, p2.z), Vector3(p3.x, p3.y, p3.z));
+		Vertex.push_back(tr);
+	}
+}
+
+bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
+{
+	std::cout << "triangle : "+ Vertex.size() << std::endl;
+	for (int i = 0; i < Vertex.size(); i++)
+	{
+		if (Vertex[i].Intersect(ray, impact)) {
+			return true;
+		}
+	}
+
+	return false;
 }
