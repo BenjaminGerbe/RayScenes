@@ -7,6 +7,9 @@
 #include "Image.h"
 #endif
 
+
+static Image* blank = new Image(1, 1, 3, new unsigned char[3] {static_cast<unsigned char>(255), static_cast<unsigned char>(255), static_cast<unsigned char>(255)});
+static Image* black = new Image(1, 1, 3, new unsigned char[3] {static_cast<unsigned char>(0), static_cast<unsigned char>(0), static_cast<unsigned char>(0)});
  
 class Color {
 
@@ -107,13 +110,12 @@ class Material {
 
 	Image* colorMap;
 	Image* normalMap;
-
-	bool hasNormalMap = false;
+	Image* roughnessMap;
 
 
 
 public:
-	Material(Color a, Color d, Color s,float si) :ambiante(a), diffuse(d), speculaire(s),shininess(si),colorMap(new Image(1, 1, 3, new unsigned char[3] {static_cast<unsigned char>(255), static_cast<unsigned char>(255), static_cast<unsigned char>(255)})),normalMap(new Image) {};
+	Material(Color a, Color d, Color s,float si) :ambiante(a), diffuse(d), speculaire(s),shininess(si),colorMap(blank),normalMap(blank), roughnessMap(blank){};
 
 	Material();
 
@@ -121,6 +123,7 @@ public:
 		return ambiante;
 	}
 
+	
 	Color getSpeculaire() {
 		return speculaire;
 	}
@@ -138,8 +141,13 @@ public:
 	}
 
 	void setNormalMap(Image* image) {
-		hasNormalMap = true;
+	
 		this->normalMap = image;
+	}
+
+	void setRoughnessMap(Image* image) {
+
+		this->roughnessMap = image;
 	}
 
 	Image* getColorMap() {
@@ -150,9 +158,9 @@ public:
 		return this->normalMap;
 	}
 
-
-	bool getHasNormalMap() {
-		return hasNormalMap;
+	Image* getRoughnessMap() {
+		return this->roughnessMap;
 	}
+
 
 };

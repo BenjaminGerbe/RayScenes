@@ -143,13 +143,60 @@ public:
     std::vector<unsigned char*> getImage() const { return this->image; };
 
     unsigned char* getColor(int i, int j) {
-        if (width == 0 || height == 0) {
+        if (width == 0 || height == 0 ) {
             return new unsigned char[3] {0, 0, 0};
         }
 
         return image[j * width + i];
     }
 
+
+    Image blur(Image im) {
+
+        std::cout << "start basic AA done" << std::endl;
+        std::vector<unsigned char*> arr = im.getImage();
+        Image copy(im);
+        int width = im.getWidth();
+        int height = im.getHeight();
+        int radius = 1;
+        std::vector<unsigned char*> arrC = copy.getImage();
+        float* sum = new float[3] {0, 0, 0};
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+
+                int a = std::clamp(i - radius, 0, width);
+                int b = std::clamp(i + radius + 1, 0, width);
+
+                int c = std::clamp(j - radius, 0, height);
+                int d = std::clamp(j + radius + 1, 0, height);
+
+                int k = 0;
+                sum = new float[3] { 0, 0, 0 };
+
+                for (int x = a; x < b; x++) {
+                    for (int y = c; y < d; y++) {
+
+
+                        for (size_t n = 0; n < 3; n++)
+                        {
+                            sum[n] += arr[width * y + x][n];
+                        }
+
+                        k++;
+                    }
+                }
+
+                arrC[(width * j + i)][0] = (float)sum[0] / k;
+                arrC[(width * j + i)][1] = (float)sum[1] / k;
+                arrC[(width * j + i)][2] = (float)sum[2] / k;
+
+            }
+        }
+
+        std::cout << "Basic AA done" << std::endl;
+
+        return copy;
+    }
 
 
 };

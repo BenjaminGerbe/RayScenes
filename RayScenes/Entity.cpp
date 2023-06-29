@@ -9,7 +9,7 @@ Ray4 Camera::getRay(float x, float y) const
 
 	float ratio = width / height;
 
-	Vector3  origin(((x * 2) - 1) * ratio, (y * 2) - 1, 0);
+	Vector3  origin(((x * 2) - 1)*ratio , (y * 2) - 1, 0);
 	Vector3 v(origin.x, origin.y, -focal);
 	v = v.normalized();
 
@@ -191,6 +191,17 @@ Vector4 Square::getTextureCoordinates(const Vector4& p) const
 	return uv;
 }
 
+Vector4 Plan::getTextureCoordinates(const Vector4& p) const
+{
+	Vector4 lp = globalToLocal(p);
+	float x = lp[0] - (int)lp[0];
+	float y = lp[1] - (int)lp[1];
+	if (x < 0)x += 1;
+	if (y < 0)y += 1;
+
+	return Vector4(x, y, 0,1.0);
+}
+
 bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
 {
 
@@ -206,7 +217,7 @@ Ray4 Plan::getNormal(const Vector4& impact, const Vector4& observator) const
 	Vector4 p = globalToLocal(impact);
 	Vector4 obs = globalToLocal(observator);
 
-	Vector4 vec(0, 0, 1,0);
+	Vector4 vec(0, 0, -1,0);
 
 	if (p[2] < obs[2]) {
 		vec = -vec;
@@ -297,9 +308,9 @@ bool Sphere::Intersect(const Ray4& ray, Vector4& impact) const
 
 	if (t >= 0) {
 		impact = localToGlobal(origin +  t*vector);
+
 		return true;
 	}
-
 
 	return false;
 }
@@ -314,7 +325,6 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 	vec = p;
 
 
-	if (mat->getHasNormalMap()) {
 
 		Vector4 coord =getTextureCoordinates(impact);
 		Image* texture = mat->getNormalMap();
@@ -327,7 +337,6 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 
 		vec = vec.normalized();
 
-	}
 
 
 	if (obs[0] * obs[0] + obs[1] * obs[1] + obs[2] * obs[2] <= 1) {
@@ -483,6 +492,11 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 			unsigned char* us = (*texture).getColor(coord.x * texture->getWidth(), coord.y * texture->getWidth());
 			Color cTexture(us[0], us[1], us[2]);
 		
+
+			Image* rougNessTexture = mat->getRoughnessMap();
+			unsigned char* rg = (*rougNessTexture).getColor(coord.x * rougNessTexture->getWidth(), coord.y * rougNessTexture->getWidth());
+			Color roughTexture(rg[0], rg[1], rg[2]);
+
 			src = mat->getAmbiante()* cTexture;
 			
 			for (int j = 0; j < lstLights.size(); j++)
@@ -498,8 +512,8 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 				Vector4 R = (N*2.0f * NL ) - L;
 				Vector4 V = lstObject[i]->globalToLocal(cam.getPoistion() - impact).normalized();
 				float specular = pow(R.dot(V), mat->getShininess());
-
-				Color specColor = mat->getSpeculaire() * specular * light.getSpecularColor();
+			
+				Color specColor = mat->getSpeculaire() * specular * light.getSpecularColor() * roughTexture;
 
 				
 				src = src  +  (cTexture*mat->getDiffuse() * NL * light.getDiffuseColor()) + specColor;

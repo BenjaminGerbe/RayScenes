@@ -73,7 +73,19 @@ class Camera : public Entity{
 
 public:
 
-	Camera(float W, float H, int F) : width(W), height(H), focal(F) {};
+	Camera(float W, float H, float F, float fov, float near, float far) : width(W), height(H),focal(F) {
+		
+		fov = (fov * M_PI) / 180.0f;
+
+		trans = Matrix4x4();
+		this->trans.setAt(0, 0, 1.0f / ((1.0) * std::tan(fov / 2.0f)));
+		this->trans.setAt(1, 1, 1.0f /(std::tan(fov/2.0f)));
+		this->trans.setAt(2, 2, -(far+near)/(far-near));
+		this->trans.setAt(3, 2, -(2*far*near)/(far-near));
+
+		transInv = trans.getInverse();
+	
+	};
 
 
 	float getFocal() {
@@ -109,8 +121,10 @@ class Plan : public Entity{
 
 	public:
 	Plan();
-
 	
+	
+
+	Vector4 getTextureCoordinates(const Vector4& p)const;
 	bool  Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
