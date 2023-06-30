@@ -269,6 +269,7 @@ Ray4 Square::getNormal(const Vector4& impact, const Vector4& observator) const
 
 Sphere::Sphere()
 {
+
 }
 
 Vector4 Sphere::getTextureCoordinates(const Vector4& p) const
@@ -630,28 +631,7 @@ Vector4 Cube::getTextureCoordinates(const Vector4& p) const
 	return Vector4(0, 0, 0,1);
 }
 
-bool Triangle::Intersect(const Ray4& ray, Vector4& impact) const
-{
-	Ray4 r = globalToLocal(ray);
-	float t = -r.getOrigin().z / r.getDirection().z;
-	impact = localToGlobal(r.getOrigin() + (r.getDirection() * t));
-	Vector4 localimpact = r.getOrigin() + (r.getDirection() * t);
 
-	if (t > 0) {
-
-		Vector3 p(localimpact[0], localimpact[1],0);
-
-		float A = 1.0f / 2.0f * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
-		float sign = A < 0 ? -1 : 1;
-
-		float s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y);
-		float t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y);
-
-		return (s > 0 && t > 0 && (s + t) < 2 * A * sign);
-	}
-
-	return false;
-}
 
 
 Ray4 Triangle::getNormal(const Vector4& impact, const Vector4& observator) const
@@ -671,35 +651,93 @@ Ray4 Triangle::getNormal(const Vector4& impact, const Vector4& observator) const
 }
 
 
+bool Triangle::Intersect(const Ray4& ray, Vector4& impact) const
+{
+	Ray4 r = globalToLocal(ray);
+	Vector3 v1(p1.x - p0.x, p1.y- p0.y, p1.z - p0.z);
+	Vector3 v2(p2.x - p0.x, p2.y - p0.y, p2.z - p0.z);
+
+
+
+	Vector3 tmpN = v1.crossProduct(v2); 
+	
+	Vector4 N(tmpN.x, tmpN.y, tmpN.z, 0.0);
+	float n = N.getNorme();
+
+	float ND = N.dot(r.getDirection());
+	if (std::abs(ND) < std::numeric_limits<float>::epsilon()) {
+		return false;
+	}
+		
+
+	float d = -tmpN.dot(p0);
+	float t = -(N.dot(r.getOrigin()) + d) / ND;
+
+	if (t < 0) return false;
+	
+	impact = localToGlobal(r.getOrigin() + (r.getDirection() * t));
+	Vector4 localimpact = r.getOrigin() + (r.getDirection() * t);
+
+	Vector3 p(localimpact[0], localimpact[1], localimpact[2]);
+
+	Vector3 vp0( p.x - p0.x, p.y - p0.y, p.z - p0.z);
+	Vector3 _C = v1.crossProduct(vp0);
+	Vector4 C(_C.x, _C.y, _C.z, 0.0);
+	if (N.dot(C) < 0) return false;
+
+	Vector3 v3(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+	Vector3 vp1( p.x - p1.x, p.y - p1.y, p.z - p1.z);
+	_C = v3.crossProduct(vp1);
+	C = Vector4(_C.x, _C.y, _C.z, 0.0);
+	if (N.dot(C) < 0) return false;
+
+	Vector3 v4(p0.x - p2.x, p0.y - p2.y, p0.z - p2.z);
+	Vector3 vp2(p.x - p2.x, p.y - p2.y, p.z - p2.z);
+	_C = v4.crossProduct(vp2);
+	C = Vector4(_C.x, _C.y, _C.z, 0.0);
+	if (N.dot(C) < 0) return false;
+
+
+	return true;
+}
+
+
+
 Mesh::Mesh(std::vector<Vector3> v)
 {
-	std::cout << "vertex : " + v.size() << std::endl;
-	for (int i = 0; i < v.size()-3; i+=3)
+	
+	
+	for (int i = 0; i <= v.size()-3; i+=3)
 	{
 
 		Vector4 p1(v[i].x, v[i].y, v[i].z,1.0);
-		p1 = globalToLocal(p1);
-
 		Vector4 p2(v[i+1].x, v[i+1].y, v[i+1].z, 1.0);
-		p2 = globalToLocal(p2);
-
 		Vector4 p3(v[i + 2].x, v[i + 2].y, v[i + 2].z, 1.0);
-		p3 = globalToLocal(p3);
 
 		Triangle tr(Vector3(p1.x,p1.y,p1.z), Vector3(p2.x, p2.y, p2.z), Vector3(p3.x, p3.y, p3.z));
 		Vertex.push_back(tr);
 	}
+	
 }
+
+
 
 bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
 {
-	std::cout << "triangle : "+ Vertex.size() << std::endl;
+
 	for (int i = 0; i < Vertex.size(); i++)
 	{
+	
 		if (Vertex[i].Intersect(ray, impact)) {
+
 			return true;
 		}
 	}
 
 	return false;
+}
+
+Ray4 Mesh::getNormal(const Vector4& impact, const Vector4& observator) const
+{
+	return Ray4();
 }

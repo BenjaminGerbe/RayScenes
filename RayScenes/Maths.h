@@ -1,4 +1,4 @@
-#ifndef __MATHlib__
+﻿#ifndef __MATHlib__
 #define __MATHlib__
 
 # define M_PI           3.14159265358979323846  /* pi */
@@ -165,7 +165,30 @@ class Vector {
         return v;
     }
 
+
+    Vector operator+(const Vector& vec) const {
+        Vector v;
+
+        for (int i = 0; i < N; i++)
+        {
+            v.setAt(i, getAt(i) + vec[i]);
+        }
+
+        return v;
+    }
+
     Vector operator-(const Vector& vec) {
+        Vector v;
+
+        for (int i = 0; i < N; i++)
+        {
+            v.setAt(i, getAt(i) - vec[i]);
+        }
+
+        return v;
+    }
+
+    Vector operator-(const Vector& vec) const {
         Vector v;
 
         for (int i = 0; i < N; i++)
@@ -202,7 +225,7 @@ class Vector {
 
         for (int i = 0; i < N; i++)
         {
-            v[i] = (*this).getAt(i) / s;
+            v.setAt(i, v[i] / s);
         }
 
         return v;
@@ -289,6 +312,16 @@ class Vector3 : public Vector<3> {
         return (*this);
     }
 
+    Vector3 crossProduct(const Vector3 b) const {
+        Vector3 a = (*this);
+
+        float x = a.y*b.z-a.z*b.y;
+        float y = a.z * b.x - a.x * b.z;
+        float z = a.x*b.y - a.y*b.x;
+
+        return Vector3(x, y, z);
+    }
+
 };
 
 class Vector4 : public Vector<4> {
@@ -336,9 +369,6 @@ public:
     Vector4 operator*(float scalar) const {
         return Vector4(getAt(0) * scalar, getAt(1) * scalar, getAt(2) * scalar, getAt(3) * scalar);
     }
-
-
-
 
 };
 
@@ -435,6 +465,10 @@ public:
         Ray4 ray(mat * r.getOrigin(), mat * r.getDirection());
     
         return ray;
+    }
+
+    ~Ray4(){
+      
     }
 
 };

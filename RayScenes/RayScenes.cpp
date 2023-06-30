@@ -8,7 +8,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION 
 #include "tiny_obj_loader.h"
 
-std::string inputfile = "Chess-pieces-Knight.obj";
+std::string inputfile = "Chess_Knights.obj";
 tinyobj::ObjReaderConfig reader_config;
 
 tinyobj::ObjReader reader;
@@ -34,7 +34,7 @@ std::vector<Vector3> LoadMesh() {
 		size_t index_offset = 0;
 		for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
 			size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
-
+			
 			// Loop over vertices in the face.
 			for (size_t v = 0; v < fv; v++) {
 				// access to vertex
@@ -68,8 +68,9 @@ int main(int argc, char* argv[])
 	std::vector<Vector3> vert = LoadMesh();
 
 
-	int argH = 300;
-	int argW = 300;
+
+	int argH = 100;
+	int argW = 100;
 	int argFov = 90;
 	char* sceneName;
 	
@@ -118,9 +119,9 @@ int main(int argc, char* argv[])
 	
 	Camera cam(argW, argH, 5, argFov, 0.1, 10000);
 
-	cam.rotateY(-30 * (M_PI / 180.0f));
-	cam.rotateX(-30* (M_PI / 180.0f));
-	cam.translate(0, 0, -15);
+	cam.rotateY(-90 * (M_PI / 180.0f));
+	cam.rotateX(-45* (M_PI / 180.0f));
+	cam.translate(0, 0, -55);
 
 	Image img(cam.getWidth(),cam.getHeight(), 3);
 	
@@ -129,12 +130,13 @@ int main(int argc, char* argv[])
 	Scene scene;
 
 
-	//scene.AddToScene(dynamic_cast<Entity*>(new Sphere()), basic, 0, 0, 0);
-	//scene.AddToScene(dynamic_cast<Entity*>(new Triangle(Vector3(-1,-1,0), Vector3(1, -1, 0),Vector3(-1, 1, 0))), basic, 0, 0, 0);
+	//scene.AddToScene(dynamic_cast<Entity*>(new Cube()), basic, 0, 0, 0);
+	//scene.AddToScene(dynamic_cast<Entity*>(new Triangle(Vector3(-1,-1,5), Vector3(1, -1, 1),Vector3(-1, 1, 1))), basic, 0, 0, 0);
 	scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert)), basic, 0, 0, 0);
 
-	scene.getEntity(0)->rotateX(90.0f *(M_PI / 180.0f));
+	
 	scene.getEntity(0)->scale(1);
+	scene.getEntity(0)->rotateX(-90.0f*(M_PI/180.0f));
 
 	Ray4 rL(Vector4(0, 100, -2, 1), Vector4(0, 1, -.3, -.3).normalized());
 	Light* l = new Light(rL, Color(255.0f, 255.0f, 255.0f), Color(150, 150, 150));
@@ -148,8 +150,6 @@ int main(int argc, char* argv[])
 
 	Color background (32.0f,164.0f,196.0f);
 	cam.setColor(background);
-
-
 
 
 	int width = img.getWidth();

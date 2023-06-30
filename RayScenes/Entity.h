@@ -152,6 +152,7 @@ public :
 };
 
 class Triangle : public Entity {
+protected:
 	Vector3 p0;
 	Vector3 p1;
 	Vector3 p2;
@@ -172,8 +173,7 @@ class Mesh : public Entity {
 	Mesh(std::vector<Vector3> v);
 
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
-
-
+	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 };
 
 class Sphere : public Entity {
