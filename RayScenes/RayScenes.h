@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-
+#include <memory>
 
 
 #define STB_IMAGE_IMPLEMENTATION

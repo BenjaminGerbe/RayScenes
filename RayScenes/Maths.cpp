@@ -230,8 +230,6 @@ Vector<N>::Vector(float t[N]) {
 template<int N>
 Vector<N>::Vector(const Vector<N>& vec)
 {
-    
-    tab = new float[N];
     for (int i = 0; i < N; i++) {
         tab[i] = vec.tab[i];
     }

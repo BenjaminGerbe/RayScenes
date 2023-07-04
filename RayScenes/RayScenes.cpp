@@ -43,7 +43,7 @@ std::vector<Vector3> LoadMesh() {
 				tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
 				tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
 
-				vertex.push_back(Vector3(vx, vy, vz));
+				vertex.push_back(Vector3(vx, -vy, vz));
 
 				// Check if `texcoord_index` is zero or positive. negative = no texcoord data
 				if (idx.texcoord_index >= 0) {
@@ -62,15 +62,21 @@ std::vector<Vector3> LoadMesh() {
 	return vertex;
 }
 
+
+void foo() {
+	Vector4 v1(0, 0, 0, 0);
+	Vector4 v2(0, 0, 0, 0);
+	Ray4 r(v1,v2);
+}
+
 int main(int argc, char* argv[])
 {
-
+	std::cout << "Mesh Loading ..." << std::endl;
 	std::vector<Vector3> vert = LoadMesh();
 
 
-
-	int argH = 100;
-	int argW = 100;
+	int argH = 50;
+	int argW = 50;
 	int argFov = 90;
 	char* sceneName;
 	
@@ -103,25 +109,26 @@ int main(int argc, char* argv[])
 	}
 	
 
+	std::cout << "Texture Loading ..." << std::endl;
 	Material* basic = new Material(Color(60, 60, 60), Color(255, 255, 255), Color(200, 200, 200), 50);
 
-
-	basic->setColorMap(new Image("Materials/Floor/color2.jpg"));
-	basic->setNormalMap(new Image("Materials/Floor/normal2.jpg"));
-
+	basic->setColorMap(new Image("Materials/Floor/color.jpg"));
+	basic->setNormalMap(new Image("Materials/Floor/normal.jpg"));
 
 
-	Material* White = new Material(Color(60, 60, 60), Color(180, 180, 180), Color(200, 255, 255), 50);
 
-	White->setColorMap(new Image("Materials/Floor/color.jpg"));
-	White->setNormalMap(new Image("Materials/Floor/normal.jpg"));
-	White->setRoughnessMap(new Image("Materials/Floor/roughness.jpg"));
+	Material* White = new Material(Color(60, 60, 60), Color(255, 255, 255), Color(200, 255, 255), 50);
+
+	//White->setColorMap(new Image("Materials/Floor/color.jpg"));
+	//White->setNormalMap(new Image("Materials/Floor/normal.jpg"));
+	//White->setRoughnessMap(new Image("Materials/Floor/roughness.jpg"));
 	
 	Camera cam(argW, argH, 5, argFov, 0.1, 10000);
 
-	cam.rotateY(-90 * (M_PI / 180.0f));
-	cam.rotateX(-45* (M_PI / 180.0f));
-	cam.translate(0, 0, -55);
+	cam.rotateY(60.0f * (M_PI / 180.0f));
+	cam.rotateX(-10.0f * (M_PI / 180.0f));
+	cam.translate(0, -1, -23);
+	
 
 	Image img(cam.getWidth(),cam.getHeight(), 3);
 	
@@ -129,16 +136,20 @@ int main(int argc, char* argv[])
 	std::vector<unsigned char*> arr = img.getImage();
 	Scene scene;
 
-
-	//scene.AddToScene(dynamic_cast<Entity*>(new Cube()), basic, 0, 0, 0);
+	
+	scene.AddToScene(dynamic_cast<Entity*>(new Plan()), basic, 0, 0, 0);
+	scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert)), White, 0, 0, 0);
+	//scene.AddToScene(dynamic_cast<Entity*>(new Cube()), White, 0, 0, 0);
 	//scene.AddToScene(dynamic_cast<Entity*>(new Triangle(Vector3(-1,-1,5), Vector3(1, -1, 1),Vector3(-1, 1, 1))), basic, 0, 0, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert)), basic, 0, 0, 0);
+
+	scene.getEntity(0)->rotateX(90 * (M_PI / 180.0f));
+	scene.getEntity(0)->translate(0.0,0.0f,-5.0);
+	scene.getEntity(1)->translate(0,-5,0);
+
 
 	
-	scene.getEntity(0)->scale(1);
-	scene.getEntity(0)->rotateX(-90.0f*(M_PI/180.0f));
 
-	Ray4 rL(Vector4(0, 100, -2, 1), Vector4(0, 1, -.3, -.3).normalized());
+	Ray4 rL(Vector4(0, 100, -2, 1), Vector4(1, 1, -1, 0).normalized());
 	Light* l = new Light(rL, Color(255.0f, 255.0f, 255.0f), Color(150, 150, 150));
 	scene.AddLightToScene(l);
 
@@ -165,7 +176,7 @@ int main(int argc, char* argv[])
 			float y = (float)j / height;
 
 			if ( j ==  0) {
-				std::cout << (int)(x*100) << " %" << std::endl;
+				std::cout << (float)(x*100.0f) << " %" << std::endl;
 			}
 			
 			Ray4 r = cam.getRay(x, y);

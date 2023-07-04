@@ -143,9 +143,7 @@ class Vector {
     ~Vector();
 
     Vector operator=(const Vector& vec) {
-  
-       this->tab = new float[N];
-
+      
         for (int i = 0; i < N; i++)
         {
             setAt(i, vec.getAt(i));
@@ -153,6 +151,7 @@ class Vector {
 
         return (*this);
     }
+
 
     Vector operator+(const Vector& vec) {
         Vector v;
@@ -422,23 +421,35 @@ public:
     }
 
     Ray4(Ray r) {
-        origin = *new Vector4(r.getOrigin().x, r.getOrigin().y, r.getOrigin().z, 1);
-        direction = *new Vector4(r.getDirection().x, r.getDirection().y, r.getDirection().z, 0);
+        origin =  Vector4(r.getOrigin().x, r.getOrigin().y, r.getOrigin().z, 1);
+        direction =  Vector4(r.getDirection().x, r.getDirection().y, r.getDirection().z, 0);
 
+    }
+
+    Ray4( Ray4 &r) {
+        origin =  Vector4(r.getOrigin());
+        direction =  Vector4(r.getDirection());
+    }
+
+    Ray4(const Ray4& r) {
+        origin =  Vector4(r.getOrigin());
+        direction =  Vector4(r.getDirection());
     }
 
     Ray4(Vector4 ori, Vector4 dir) {
-        origin = ori ;
-        direction = dir;
+        origin =   ori ;
+        direction =  dir;
     }
 
+    
+
     Ray4(float ox, float oy, float oz, float ow, float dx, float dy, float dz, float dw) {
-        origin = Vector4(ox, oy, oz,ow);
-        direction = Vector4(dx, dy, dz,dw);
+        origin =  Vector4(ox, oy, oz,ow);
+        direction =  Vector4(dx, dy, dz,dw);
     }
 
     Vector4 getOrigin() const{
-        return this->origin;
+        return (this->origin);
     }
 
     Vector4 getDirection()const {
@@ -446,29 +457,32 @@ public:
     }
 
     void setOrigin(const Vector4 o) {
-        this->origin = o;
+        this->origin =  Vector4(o);
     }
 
     void setDirection(const Vector4 d) {
-        this->direction = d;
+        this->direction =  Vector4(d);
     }
 
     Ray4 normalized() {
-
-        this->direction = this->direction.normalized();
+        this->direction = direction.normalized();
 
         return (*this);
     }
     
     friend Ray4 operator*(const Matrix4x4& mat,const Ray4& r) {
     
-        Ray4 ray(mat * r.getOrigin(), mat * r.getDirection());
+
+        Ray4 ray( mat * r.getOrigin(), mat * r.getDirection());
     
         return ray;
     }
 
-    ~Ray4(){
-      
+    Ray4 operator=(const Ray4 &r)  {
+        origin =  Vector4(r.getOrigin());
+        direction =  Vector4(r.getDirection());
+
+        return (*this);
     }
 
 };

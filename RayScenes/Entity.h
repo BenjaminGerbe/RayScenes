@@ -75,6 +75,7 @@ public:
 
 	Camera(float W, float H, float F, float fov, float near, float far) : width(W), height(H),focal(F) {
 		
+		/*
 		fov = (fov * M_PI) / 180.0f;
 
 		trans = Matrix4x4();
@@ -84,7 +85,7 @@ public:
 		this->trans.setAt(3, 2, -(2*far*near)/(far-near));
 
 		transInv = trans.getInverse();
-	
+	*/
 	};
 
 
@@ -156,11 +157,18 @@ protected:
 	Vector3 p0;
 	Vector3 p1;
 	Vector3 p2;
-public : 
-	Triangle(Vector3 a, Vector3 b, Vector3 c) :p0(a), p1(b), p2(c) {};
+	Vector4 normal;
 
-	bool Intersect(const Ray4& ray, Vector4& impact) const;
+public : 
+	Triangle(Vector3 a, Vector3 b, Vector3 c) :p0(a), p1(b), p2(c) { normal = Vector4(); };
+
+	bool Intersect(const Ray4& ray, Vector4& impact) const ;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
+
+	Vector4 getNormalTmp() {
+		return normal;
+	}
+
 };
 
 
@@ -168,12 +176,16 @@ class Mesh : public Entity {
 	
 	std::vector<Triangle> Vertex;
 	std::vector<Vector3> Face;
+	Vector4 normal;
 
 	public :
 	Mesh(std::vector<Vector3> v);
 
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
+	
+	
+
 };
 
 class Sphere : public Entity {
@@ -205,12 +217,12 @@ class Light : public Entity
 
 	public :
 
-	Light(Ray4 r, Color c, Color s) :LightRay(r), DiffuseColor(c), SpecularColor(s){
-
+	Light(Ray4 r, Color c, Color s) : DiffuseColor(c), SpecularColor(s){
+		LightRay = r;
 	}
 
 	Light() {
-		LightRay = Ray4();
+		
 
 		DiffuseColor = Color(255, 255, 255);
 		SpecularColor = Color(255, 255, 255);
