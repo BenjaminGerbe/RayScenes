@@ -507,10 +507,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 			unsigned char* rg = (*rougNessTexture).getColor(coord.x *(rougNessTexture->getWidth()-1), coord.y *( rougNessTexture->getHeight()-1));
 			Color roughTexture(rg[0], rg[1], rg[2]);
 
-			src = mat->getAmbiante() * cTexture;
-			r = src.r;
-			g = src.g;
-			b = src.b;
+			src = mat->getAmbiante() * cTexture; 
 
 			for (int j = 0; j < lstLights.size(); j++)
 			{
@@ -532,10 +529,6 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 				Color temp = (cTexture * mat->getDiffuse() * NL * light.getDiffuseColor()) + specColor;
 				src = src + temp;
 
-				r = r + temp.r;
-				g = g + temp.g;
-				b = b + temp.b;
-
 			}
 		}
 	}
@@ -546,7 +539,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 		return cam.getBackgroundColor();
 	}
 
-	return Color(r,g,b);
+	return src;
 }
 
 
@@ -739,6 +732,7 @@ Mesh::Mesh(std::vector<Vector3> v, std::vector<Vector3> normals)
 	}
 	
 }
+
 
 
 bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
