@@ -11,7 +11,7 @@ endif()
 
 
 # Add source to this project's executable.
-add_executable (RayScenes "RayScenes.cpp" "RayScenes.h"  "stb_image.h" "stb_image_write.h"  "Image.h" "Maths.h" "Maths.cpp"  "Entity.h" "Entity.cpp" "Material.h" "Material.cpp" "tiny_obj_loader.h")
+add_executable (RayScenes "RayScenes.cpp" "RayScenes.h"  "stb_image.h" "stb_image_write.h"  "Image.h" "Maths.h" "Maths.cpp"  "Entity.h" "Entity.cpp" "Material.h" "Material.cpp" "tiny_obj_loader.h" "json_struct.h")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 

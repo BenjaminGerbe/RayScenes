@@ -165,8 +165,13 @@ public :
 	bool Intersect(const Ray4& ray, Vector4& impact) const ;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
 
-	Vector4 getNormalTmp() {
+	Vector4 getNormalc() {
 		return normal;
+	}
+
+	
+	void setNormalc(Vector3 normal) {
+		this->normal = Vector4(normal.x,normal.y,normal.z,0.0);
 	}
 
 };
@@ -179,7 +184,7 @@ class Mesh : public Entity {
 	Vector4 normal;
 
 	public :
-	Mesh(std::vector<Vector3> v);
+	Mesh(std::vector<Vector3> v, std::vector<Vector3> n);
 
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;

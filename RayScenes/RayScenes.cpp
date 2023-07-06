@@ -4,6 +4,7 @@
 #include "RayScenes.h"
 #include <omp.h>
 #include <chrono>
+#include "json_struct.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION 
 #include "tiny_obj_loader.h"
@@ -18,7 +19,12 @@ auto& attrib = reader.GetAttrib();
 auto& shapes = reader.GetShapes();
 auto& materials = reader.GetMaterials();
 
-std::vector<Vector3> LoadMesh() {
+struct dataMesh {
+	std::vector<Vector3> n;
+	std::vector<Vector3> v;
+};
+
+dataMesh LoadMesh() {
 
 	if (!reader.ParseFromFile(inputfile, reader_config)) {
 		if (!reader.Error().empty()) {
@@ -26,15 +32,17 @@ std::vector<Vector3> LoadMesh() {
 		}
 		exit(1);
 	}
-
-
+	dataMesh d;
+	
 	std::vector<Vector3> vertex;
+	std::vector<Vector3> normals;
+	// Loop over shapes
 	for (size_t s = 0; s < shapes.size(); s++) {
 		// Loop over faces(polygon)
 		size_t index_offset = 0;
 		for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
 			size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
-			
+
 			// Loop over vertices in the face.
 			for (size_t v = 0; v < fv; v++) {
 				// access to vertex
@@ -43,13 +51,16 @@ std::vector<Vector3> LoadMesh() {
 				tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
 				tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
 
-				vertex.push_back(Vector3(vx, -vy, vz));
-
-				// Check if `texcoord_index` is zero or positive. negative = no texcoord data
-				if (idx.texcoord_index >= 0) {
-					tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
-					tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
+				if (idx.normal_index >= 0) {
+					tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
+					tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
+					tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
+					normals.push_back(Vector3(nx, ny, nz));
+				
 				}
+		
+				vertex.push_back(Vector3(vx, vy, vz));
+	
 
 			}
 			index_offset += fv;
@@ -59,7 +70,11 @@ std::vector<Vector3> LoadMesh() {
 		}
 	}
 
-	return vertex;
+	d.v = vertex;
+	d.n = normals;
+
+
+	return d;
 }
 
 
@@ -69,17 +84,31 @@ void foo() {
 	Ray4 r(v1,v2);
 }
 
+struct SceneParser {
+	int one;
+	int deux;
+
+};
+JS_OBJ_EXT(SceneParser, one, deux);
+
 int main(int argc, char* argv[])
 {
 	std::cout << "Mesh Loading ..." << std::endl;
-	std::vector<Vector3> vert = LoadMesh();
+	dataMesh d = LoadMesh();
+	std::vector<Vector3> vert = d.v;
+	std::vector<Vector3> normals = d.n;
 
-
-	int argH = 50;
-	int argW = 50;
+	int argH = 45;
+	int argW = 45;
 	int argFov = 90;
 	char* sceneName;
-	
+
+
+	SceneParser sp;
+	sp.one = 4;
+	sp.deux = 1;
+	std::string pretty_json = JS::serializeStruct(sp);
+	std::cout << pretty_json << std::endl;
 
 	for (int i = 0; i < argc; i++) {	
 	
@@ -125,9 +154,9 @@ int main(int argc, char* argv[])
 	
 	Camera cam(argW, argH, 5, argFov, 0.1, 10000);
 
-	cam.rotateY(60.0f * (M_PI / 180.0f));
-	cam.rotateX(-10.0f * (M_PI / 180.0f));
-	cam.translate(0, -1, -23);
+	cam.rotateY((180.0f-60.0f) * (M_PI / 180.0f));
+	cam.rotateX(-10 * (M_PI / 180.0f));
+	cam.translate(0, -2, -25);
 	
 
 	Image img(cam.getWidth(),cam.getHeight(), 3);
@@ -138,13 +167,17 @@ int main(int argc, char* argv[])
 
 	
 	scene.AddToScene(dynamic_cast<Entity*>(new Plan()), basic, 0, 0, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert)), White, 0, 0, 0);
+	scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert,normals)), White, 0, 0, 0);
 	//scene.AddToScene(dynamic_cast<Entity*>(new Cube()), White, 0, 0, 0);
 	//scene.AddToScene(dynamic_cast<Entity*>(new Triangle(Vector3(-1,-1,5), Vector3(1, -1, 1),Vector3(-1, 1, 1))), basic, 0, 0, 0);
 
 	scene.getEntity(0)->rotateX(90 * (M_PI / 180.0f));
 	scene.getEntity(0)->translate(0.0,0.0f,-5.0);
-	scene.getEntity(1)->translate(0,-5,0);
+
+	scene.getEntity(1)->scale(1);
+	scene.getEntity(1)->rotateX(180 * (M_PI / 180.0f));
+	scene.getEntity(1)->translate(0,4.5,0);
+
 
 
 	
@@ -197,7 +230,7 @@ int main(int argc, char* argv[])
 
 	
 	std::string input;
-	input = "output.png";
+	input = "outputt.png";
 	char* path = new char[input.length() + 1];
 	strcpy(path, input.c_str());
 

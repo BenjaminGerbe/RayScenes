@@ -421,7 +421,7 @@ Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam) {
 			
 			float NL = 0;
 			Vector4 N = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()).getDirection()).normalized();
-			std::cout << N << std::endl;
+		
 			Material* mat = lstObject[i]->GetMat();
 			depth = tmp;
 			src = mat->getAmbiante();
@@ -476,6 +476,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 
 	lstObject = std::vector<Entity*>(this->lstObject);
 
+	
 	for (int i = 0; i < lstObject.size(); i++)
 	{
 		if (lstObject[i]->Intersect(ray, impact)) {
@@ -490,9 +491,11 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 
 			float NL = 0;
 			Vector4 N = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()).getDirection()).normalized();
+			Color cN(N.x*255.0f, N.y * 255.0f, N.z * 255.0f);
 			Material* mat = lstObject[i]->GetMat();
 			depth = tmp;
 
+			
 
 			Vector4 coord = lstObject[i]->getTextureCoordinates(impact);
 			Image* texture = mat->getColorMap();
@@ -505,7 +508,9 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 			Color roughTexture(rg[0], rg[1], rg[2]);
 
 			src = mat->getAmbiante() * cTexture;
-		
+			r = src.r;
+			g = src.g;
+			b = src.b;
 
 			for (int j = 0; j < lstLights.size(); j++)
 			{
@@ -527,6 +532,10 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 				Color temp = (cTexture * mat->getDiffuse() * NL * light.getDiffuseColor()) + specColor;
 				src = src + temp;
 
+				r = r + temp.r;
+				g = g + temp.g;
+				b = b + temp.b;
+
 			}
 		}
 	}
@@ -537,7 +546,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 		return cam.getBackgroundColor();
 	}
 
-	return src;
+	return Color(r,g,b);
 }
 
 
@@ -632,13 +641,15 @@ Vector4 Cube::getTextureCoordinates(const Vector4& p) const
 
 Ray4 Triangle::getNormal(const Vector4& impact, const Vector4& observator) const
 {
+	Ray4 tr(impact, this->normal);
+	return tr;
 	Vector3 v1(p1.x - p0.x, p1.y - p0.y, p1.z - p0.z);
 	Vector3 v2(p2.x - p0.x, p2.y - p0.y, p2.z - p0.z);
 	Vector3 tmpN = v1.crossProduct(v2);
 
 	Vector4 N(tmpN.x, tmpN.y, tmpN.z, 0.0);
 
-	Ray4 r(impact,-N);
+	Ray4 r(impact,N);
 
 	return r;
 }
@@ -711,10 +722,10 @@ bool Triangle::Intersect(const Ray4& ray, Vector4& impact) const
 
 
 
-Mesh::Mesh(std::vector<Vector3> v)
+Mesh::Mesh(std::vector<Vector3> v, std::vector<Vector3> normals)
 {
 	
-	
+
 	for (int i = 0; i <= v.size()-3; i+=3)
 	{
 
@@ -722,28 +733,50 @@ Mesh::Mesh(std::vector<Vector3> v)
 		Vector4 p2(v[i+1].x, v[i+1].y, v[i+1].z, 1.0);
 		Vector4 p3(v[i + 2].x, v[i + 2].y, v[i + 2].z, 1.0);;
 
-		Triangle tr(Vector3(p1.x,p1.y,p1.z), Vector3(p3.x, p3.y, p3.z),Vector3(p2.x, p2.y, p2.z));
+		Triangle tr(Vector3(p1.x,p1.y,p1.z), Vector3(p2.x, p2.y, p2.z), Vector3(p3.x, p3.y, p3.z));
+		tr.setNormalc(normals[i]);
 		Vertex.push_back(tr);
 	}
 	
 }
 
 
-
 bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
 {
 	Ray4 r = globalToLocal(ray);
+	std::vector<Vector4> lstImpact;
+	std::vector<int> lstIdx;
 
 	for (int i = 0; i < Vertex.size(); i++)
 	{
-	
 		if (Vertex[i].Intersect(r, impact)) {
-			impact = localToGlobal(impact);
-			return true;
+			lstImpact.push_back(Vector4(localToGlobal(impact)));
+			lstIdx.push_back(i);
 		}
 	}
 
-	return false;
+	if (lstImpact.size() == 0) {
+		return false;
+	}	
+
+	if (lstImpact.size() == 1) {
+		impact = localToGlobal(lstImpact[0]);
+		return true;
+	}
+
+	impact = lstImpact[0];
+
+	float distance = std::powf(lstImpact[0].x - ray.getOrigin().x,2)+ std::powf(lstImpact[0].y - ray.getOrigin().y, 2)+ std::powf(lstImpact[0].z - ray.getOrigin().z, 2);
+	for (int i = 1; i < lstImpact.size(); i++)
+	{
+		float d = std::powf(lstImpact[i].x - ray.getOrigin().x, 2) + std::powf(lstImpact[i].y - ray.getOrigin().y, 2) + std::powf(lstImpact[i].z - ray.getOrigin().z, 2);
+		if (d <= distance) {
+			distance = d;
+			impact = lstImpact[i];
+		}
+	}
+
+	return true;
 }
 
 Ray4 Mesh::getNormal(const Vector4& impact, const Vector4& observator) const
@@ -753,14 +786,34 @@ Ray4 Mesh::getNormal(const Vector4& impact, const Vector4& observator) const
 
 	Ray4 r = (Ray4(lo, (lp-lo).normalized()));
 	Vector4 im;
+	Vector4 dir;
+
+
+	std::vector<Vector4> lstNormal;
+
 	for (int i = 0; i < Vertex.size(); i++)
 	{
-
 		if (Vertex[i].Intersect(r, im)) {
-
-			return localToGlobal( Vertex[i].getNormal(lp, lo));
+			lstNormal.push_back(Vector4(localToGlobal(Vertex[i].getNormal(lp,lo).getDirection())));
 		}
 	}
-	
-	return Ray4(impact,Vector4(0,0,0,0));
+
+	if (lstNormal.size() <= 0) {
+		dir = Vector4(0, 0, 0,0);
+		return Ray4(impact, Vector4(0,0,0,0));
+	}
+
+	dir = lstNormal[0];
+	float distance = std::powf(lstNormal[0].x - observator[0], 2) + std::powf(lstNormal[0].y - observator[1], 2) + std::powf(lstNormal[0].z - observator[2], 2);
+	for (int i = 1; i < lstNormal.size(); i++)
+	{
+		float d = std::powf(lstNormal[i].x - observator[0], 2) + std::powf(lstNormal[i].y - observator[1], 2) + std::powf(lstNormal[i].z - observator[2], 2);
+		if (d <= distance) {
+			distance = d;
+			dir = lstNormal[i];
+		}
+	}
+
+
+	return Ray4(impact, dir);
 }
