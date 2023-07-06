@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-
+#include "json_struct.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -36,9 +36,10 @@
 
 
 
-
-
-
-
 #include "Entity.h"
+JS_OBJ_EXT(CameraParser, position,angle,backgroundColor);
+JS_OBJ_EXT(EntityParser,type, position,angle,idMaterial,meshPath);
+JS_OBJ_EXT(MaterialParser,ambiante, diffuse,specular,si,colorMapPath,normalMapPath);
+JS_OBJ_EXT(LightParser,direction,color,specular);
+JS_OBJ_EXT(SceneParser, camera, materials,entities,lights);
 

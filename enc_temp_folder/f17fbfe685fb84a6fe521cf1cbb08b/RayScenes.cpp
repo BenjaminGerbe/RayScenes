@@ -217,8 +217,10 @@ int main(int argc, char* argv[])
 	Light* l2 = new Light(rL2, Color(50.0f, 50.0f, 255.0f), Color(200.0f, 150.0F, 150.0F));
 	scene.AddLightToScene(l2);
 
+
 	Color background (32.0f,164.0f,196.0f);
 	cam.setColor(background);
+
 
 	int width = img.getWidth();
 	int height = img.getHeight();

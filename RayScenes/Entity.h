@@ -279,3 +279,41 @@ class Scene {
 	}
 
 };
+
+
+
+struct CameraParser {
+	float position[3];
+	float angle[3];
+	float backgroundColor[3];
+};
+
+struct EntityParser {
+	std::string type;
+	float position[3];
+	float angle[3];
+	int idMaterial;
+	std::string meshPath;
+};
+
+struct LightParser {
+	float direction[3];
+	float color[3];
+	float specular[3];
+};
+
+struct MaterialParser {
+	float ambiante[3];
+	float diffuse[3];
+	float specular[3];
+	float si;
+	std::string colorMapPath;
+	std::string normalMapPath;
+};
+
+struct SceneParser {
+	CameraParser camera;
+	std::vector<MaterialParser> materials;
+	std::vector<EntityParser> entities;
+	std::vector<LightParser> lights;
+};

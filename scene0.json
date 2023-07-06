@@ -1,0 +1,129 @@
+{
+  "camera": {
+    "position": [
+      0,
+      -2,
+      -25
+    ],
+    "angle": [
+      120.0,
+      -10,
+      0
+    ],
+    "backgroundColor": [
+      32.0,
+      164.0,
+      196.0
+    ]
+  },
+  "materials": [
+    {
+      "ambiante": [
+        60,
+        60,
+        60
+      ],
+      "diffuse": [
+        255,
+        255,
+        255
+      ],
+      "specular": [
+        200,
+        200,
+        200
+      ],
+      "si": 50,
+      "colorMapPath": "Materials/Floor/color.jpg",
+      "normalMapPath": "Materials/Floor/normal.jpg"
+    },
+    {
+      "ambiante": [
+        60,
+        60,
+        60
+      ],
+      "diffuse": [
+        255,
+        255,
+        255
+      ],
+      "specular": [
+        255,
+        255,
+        255
+      ],
+      "si": 50,
+      "colorMapPath": "",
+      "normalMapPath": ""
+    }
+  ],
+  "entities": [
+    {
+      "type": "Plan",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "angle": [
+        90,
+        0,
+        0
+      ],
+      "idMaterial": 0,
+      "meshPath": ""
+    },
+    {
+      "type": "Mesh",
+      "position": [
+        0,
+        4.5,
+        0
+      ],
+      "angle": [
+        180
+       0,
+        0
+      ],
+      "idMaterial": 1,
+      "meshPath": "Chess_Knights.obj"
+    }
+  ],
+  "lights": [
+    {
+      "direction": [
+        1,
+        1,
+        -1
+      ],
+      "color": [
+        255
+        255,
+        255
+      ],
+      "specular": [
+        150
+        150,
+        150
+      ]
+    },
+    {
+      "direction": [
+        -1,
+        0,
+        0
+      ],
+      "color": [
+        50
+        50,
+        255
+      ],
+      "specular": [
+        150
+        150,
+        200
+      ]
+    }
+  ]
+}
