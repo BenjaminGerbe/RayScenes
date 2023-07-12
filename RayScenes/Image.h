@@ -143,7 +143,7 @@ public:
     std::vector<unsigned char*> getImage() const { return this->image; };
 
     unsigned char* getColor(int i, int j) {
-        if (height <= 0 || width <= 0 || j * width + i >= height*width) {
+        if (height <= 0 || width <= 0 || j * width + i >= height*width ) {
             return new unsigned char[3] {0, 0, 0};
         }
 
@@ -158,7 +158,7 @@ public:
         Image copy(im);
         int width = im.getWidth();
         int height = im.getHeight();
-        int radius = 1;
+        int radius = 5;
         std::vector<unsigned char*> arrC = copy.getImage();
         float* sum = new float[3] {0, 0, 0};
         for (int i = 0; i < width; i++) {

@@ -5,19 +5,38 @@
 #include <utility>
 
 
-Ray4 Camera::getRay(float x, float y) const
+double uniform()
 {
+	return (double)rand() / RAND_MAX;
+}
 
+Vector3 randPoint(
+	float r, float x, float y)
+{
+	// Result vector
+	Vector3 res;
+	double theta = 2 * M_PI * uniform();
+
+	// Get length from center
+	double len = sqrt(uniform()) * r;
+	res = Vector3( x + len * std::cosf(theta), y + len * std::sinf(theta),0.0);
+	// Return the N points
+	return res;
+}
+
+Ray4 Camera::getRay(float x, float y) const {
 	float ratio = width / height;
 
-	Vector3  origin(((x * 2) - 1)*ratio , (y * 2) - 1, 0);
+	Vector3 origin( (((x * 2) - 1) * ratio ), ((y * 2) - 1 ), 0);
+	// Générer un décalage aléatoire pour le flou
+
+	Vector3 o(0, 0, -focal);
+	// Ajouter le décalage aléatoire à la direction du rayon
 	Vector3 v(origin.x, origin.y, -focal);
 	v = v.normalized();
 
 	Ray r(origin, v);
-
 	Ray4 ray(r);
-
 
 	ray = localToGlobal(Ray4(r));
 	return ray;
@@ -46,6 +65,7 @@ void Entity::scale(float f) {
 }
 
 void Entity::rotateX(float deg) {
+	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
 	rot.setAt(1, 1, std::cosf(deg));
 	rot.setAt(1, 2, -std::sinf(deg));
@@ -59,6 +79,7 @@ void Entity::rotateX(float deg) {
 }
 
 void Entity::rotateY(float deg) {
+	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
 	rot.setAt(0, 0, std::cosf(deg));
 	rot.setAt(0, 2, std::sinf(deg));
@@ -74,6 +95,7 @@ void Entity::rotateY(float deg) {
 
 
 void Entity::rotateZ(float deg) {
+	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
 	rot.setAt(0, 0, std::cosf(deg));
 	rot.setAt(0, 1, -std::sinf(deg));
@@ -132,8 +154,6 @@ Ray4 Entity::localToGlobal(const Ray4& r) const
 }
 
 
-
-
 Ray4 Entity::globalToLocal(const Ray4& r) const
 {
 
@@ -167,8 +187,6 @@ Material* Entity::GetMat() const
 {
 	return this->mat;
 }
-
-
 
 
 void Entity::SetMat(Material* mat)
@@ -400,7 +418,7 @@ Ray4 InfCylender::getNormal(const Vector4& impact, const Vector4& observator) co
 }
 
 
-Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam) {
+Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam,bool shadow) {
 	Color src(1,1,1);
 	Vector4 impact;
 	float depth = std::numeric_limits<float>::max();
@@ -432,7 +450,7 @@ Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam) {
 				NL += N.dot(L);
 				NL = std::clamp(NL, 0.0f, 1.0f);
 
-				if (isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
+				if (shadow && isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
 
 				Color cNL(NL, NL, NL);
 				cNL = cNL * 255.0f;
@@ -458,7 +476,7 @@ Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam) {
 
 
 
-Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
+Color Scene::getPixelColorPhong(Ray4 ray, Camera cam,bool shadow) {
 	
 	Color src(1, 1, 1);
 
@@ -517,7 +535,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam) {
 				NL = std::clamp(NL, 0.0f, 1.0f);
 
 
-				if (isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
+				if (shadow && isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
 
 				Vector4 R = (N * 2.0f * NL) - L;
 				Vector4 V = lstObject[i]->globalToLocal(cam.getPoistion() - impact).normalized();
@@ -715,7 +733,7 @@ bool Triangle::Intersect(const Ray4& ray, Vector4& impact) const
 
 
 
-Mesh::Mesh(std::vector<Vector3> v, std::vector<Vector3> normals)
+Mesh::Mesh(std::vector<Vector3> v, std::vector<Vector3> normals, std::vector<Vector3> t)
 {
 	
 
@@ -728,6 +746,7 @@ Mesh::Mesh(std::vector<Vector3> v, std::vector<Vector3> normals)
 
 		Triangle tr(Vector3(p1.x,p1.y,p1.z), Vector3(p2.x, p2.y, p2.z), Vector3(p3.x, p3.y, p3.z));
 		tr.setNormalc(normals[i]);
+		tr.setTexCoord(t[i], t[i+1], t[i+2]);
 		Vertex.push_back(tr);
 	}
 	
@@ -754,7 +773,8 @@ bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
 	}	
 
 	if (lstImpact.size() == 1) {
-		impact = localToGlobal(lstImpact[0]);
+		impact = (lstImpact[0]);
+		intersected = lstIdx[0];
 		return true;
 	}
 
@@ -767,6 +787,7 @@ bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
 		if (d <= distance) {
 			distance = d;
 			impact = lstImpact[i];
+			intersected = lstIdx[i];
 		}
 	}
 
@@ -775,6 +796,12 @@ bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
 
 Ray4 Mesh::getNormal(const Vector4& impact, const Vector4& observator) const
 {
+	Vector4 lp = globalToLocal(impact);
+	Vector4 lo = globalToLocal(observator);
+
+	return localToGlobal(Vertex[intersected].getNormal(lp, lo));
+
+	/*
 	Vector4 lp = globalToLocal(impact);
 	Vector4 lo = globalToLocal(observator);
 
@@ -810,4 +837,5 @@ Ray4 Mesh::getNormal(const Vector4& impact, const Vector4& observator) const
 
 
 	return Ray4(impact, dir);
+	*/
 }

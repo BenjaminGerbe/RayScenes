@@ -158,6 +158,7 @@ protected:
 	Vector3 p1;
 	Vector3 p2;
 	Vector4 normal;
+	Vector3 texcoord[3];
 
 public : 
 	Triangle(Vector3 a, Vector3 b, Vector3 c) :p0(a), p1(b), p2(c) { normal = Vector4(); };
@@ -169,7 +170,16 @@ public :
 		return normal;
 	}
 
+	void setTexCoord(Vector3 a, Vector3 b, Vector3 c) {
+		texcoord[0] = a;
+		texcoord[1] = b;
+		texcoord[2] = c;
+	}
 	
+	Vector3 getTexcoord(int i) {
+		return texcoord[i];
+	}
+
 	void setNormalc(Vector3 normal) {
 		this->normal = Vector4(normal.x,normal.y,normal.z,0.0);
 	}
@@ -180,16 +190,14 @@ public :
 class Mesh : public Entity {
 	
 	std::vector<Triangle> Vertex;
-	std::vector<Vector3> Face;
+	std::vector<Vector3> Texcoord;
 	Vector4 normal;
-
+	mutable int intersected;
 	public :
-	Mesh(std::vector<Vector3> v, std::vector<Vector3> n);
+	Mesh(std::vector<Vector3> v, std::vector<Vector3> n, std::vector<Vector3> t);
 
 	bool Intersect(const Ray4& ray, Vector4& impact) const;
 	Ray4 getNormal(const Vector4& impact, const Vector4& observator)const;
-	
-	
 
 };
 
@@ -260,8 +268,8 @@ class Scene {
 		lstLights = std::vector<Light*>();
 	};
 
-	Color getPixelColorLambert(Ray4 ray,Camera cam);
-	Color getPixelColorPhong(Ray4 ray,Camera cam);
+	Color getPixelColorLambert(Ray4 ray, Camera cam,bool shadow);
+	Color getPixelColorPhong(Ray4 ray,Camera cam,bool shadow);
 
 	void AddToScene(Entity* ent, Material* mat, float x, float y, float z);
 
