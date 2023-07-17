@@ -115,8 +115,8 @@ int main(int argc, char* argv[])
 	std::vector<Vector3> vert = d.v;
 	std::vector<Vector3> normals = d.n;
 
-	int argH = 45;
-	int argW = 45;
+	int argH = 50;
+	int argW = 50;
 	int argFov = 90;
 	char* sceneName;
 
@@ -203,9 +203,7 @@ int main(int argc, char* argv[])
 
 	scene.getEntity(1)->scale(1);
 	scene.getEntity(1)->rotateX(180 * (M_PI / 180.0f));
-	scene.getEntity(1)->translate(0,4.5,0);
-
-
+	scene.getEntity(1)->translate(0, 4.5, 0);
 
 	
 
