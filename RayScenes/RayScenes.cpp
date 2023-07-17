@@ -61,8 +61,6 @@ dataMesh LoadMesh() {
 				}
 		
 				vertex.push_back(Vector3(vx, vy, vz));
-	
-
 			}
 			index_offset += fv;
 
@@ -108,162 +106,232 @@ void ReadJson() {
 	context.parseTo(sp2);
 }
 
-int main(int argc, char* argv[])
-{
-	std::cout << "Mesh Loading ..." << std::endl;
-	dataMesh d = LoadMesh();
-	std::vector<Vector3> vert = d.v;
-	std::vector<Vector3> normals = d.n;
+Scene LoadScene(char* scaneName, Camera& cam, std::vector<Material*>& mats) {
+	std::string pretty_json;
 
-	int argH = 50;
-	int argW = 50;
-	int argFov = 90;
-	char* sceneName;
+	std::ifstream myfile(scaneName);
+	if (myfile.is_open())
+	{
+		std::stringstream buffer;
+		buffer << myfile.rdbuf(); // Lire tout le contenu du fichier dans le flux
 
+		pretty_json = buffer.str(); // Convertir le flux en std::string
 
-	SceneParser sp;
-	CameraParser CP;
-	EntityParser EP;
-	CP.position[0] = 1;
-	sp.camera = CP;
-	sp.entities.push_back(EP);
-	sp.entities.push_back(EP);
-	MaterialParser MP;
-	sp.materials.push_back(MP);
-	LightParser LP;
-	sp.lights.push_back(LP);
-	std::string pretty_json = JS::serializeStruct(sp);
-	std::cout << pretty_json << std::endl;
-
-
-
-	for (int i = 0; i < argc; i++) {	
-	
-		if (std::strcmp(argv[i],"-height") == 0) {
-			argH = std::atoi(argv[i + 1]);
-		}
-
-		if (std::strcmp(argv[i], "-width") == 0) {
-			argW = std::atoi(argv[i + 1]);
-		}
-
-		if (std::strcmp(argv[i], "-fov") == 0) {
-			argFov = std::atoi(argv[i + 1]);
-		}
-
-		if (std::strcmp(argv[i], "-scene") == 0) {
-			argFov = std::atoi(argv[i + 1]);
-		}
-
-		if (std::strcmp(argv[i], "-noShadow") == 0) {
-			
-		}
-
-		if (std::strcmp(argv[i], "-noTexture") == 0) {
-
-		}
+		myfile.close();
 	}
-	
 
-	std::cout << "Texture Loading ..." << std::endl;
-	Material* basic = new Material(Color(60, 60, 60), Color(255, 255, 255), Color(200, 200, 200), 50);
-
-	basic->setColorMap(new Image("Materials/Floor/color.jpg"));
-	basic->setNormalMap(new Image("Materials/Floor/normal.jpg"));
+	JS::ParseContext context(pretty_json);
+	SceneParser sp;
+	context.parseTo(sp);
 
 
-
-	Material* White = new Material(Color(60, 60, 60), Color(255, 255, 255), Color(200, 255, 255), 50);
-
-	//White->setColorMap(new Image("Materials/Floor/color.jpg"));
-	//White->setNormalMap(new Image("Materials/Floor/normal.jpg"));
-	//White->setRoughnessMap(new Image("Materials/Floor/roughness.jpg"));
-	
-	Camera cam(argW, argH, 5, argFov, 0.1, 10000);
-
-	cam.rotateY((180.0f-60.0f) * (M_PI / 180.0f));
-	cam.rotateX(-10 * (M_PI / 180.0f));
-	cam.translate(0, -2, -25);
-	
-
-	Image img(cam.getWidth(),cam.getHeight(), 3);
-	
-
-	std::vector<unsigned char*> arr = img.getImage();
 	Scene scene;
 
-	
-	scene.AddToScene(dynamic_cast<Entity*>(new Plan()), basic, 0, 0, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert,normals)), White, 0, 0, 0);
-	//scene.AddToScene(dynamic_cast<Entity*>(new Cube()), White, 0, 0, 0);
-	//scene.AddToScene(dynamic_cast<Entity*>(new Triangle(Vector3(-1,-1,5), Vector3(1, -1, 1),Vector3(-1, 1, 1))), basic, 0, 0, 0);
-
-	scene.getEntity(0)->rotateX(90 * (M_PI / 180.0f));
-	scene.getEntity(0)->translate(0.0,0.0f,-5.0);
-
-	scene.getEntity(1)->scale(1);
-	scene.getEntity(1)->rotateX(180 * (M_PI / 180.0f));
-	scene.getEntity(1)->translate(0, 4.5, 0);
-
-	
-
-	Ray4 rL(Vector4(0, 100, -2, 1), Vector4(1, 1, -1, 0).normalized());
-	Light* l = new Light(rL, Color(255.0f, 255.0f, 255.0f), Color(150, 150, 150));
-	scene.AddLightToScene(l);
-
-	Ray4 rL2(Vector4(0, 100, -2, 1), Vector4(-1, 0, 0, 0).normalized());
-	Light* l2 = new Light(rL2, Color(50.0f, 50.0f, 255.0f), Color(200.0f, 150.0F, 150.0F));
-	scene.AddLightToScene(l2);
-
-	Color background (32.0f,164.0f,196.0f);
+	// Load Camera
+	Color background(sp.camera.backgroundColor[0], sp.camera.backgroundColor[1], sp.camera.backgroundColor[2]);
 	cam.setColor(background);
+	cam.rotateY(sp.camera.angle[1]);
+	cam.rotateX(sp.camera.angle[0]);
+	cam.rotateZ(sp.camera.angle[2]);
 
-	int width = img.getWidth();
-	int height = img.getHeight();
+	cam.translate(sp.camera.position[0], sp.camera.position[1], sp.camera.position[2]);
 
-	auto start = std::chrono::system_clock::now();
+	// Load material
+	std::cout << "Texture Loading ..." << std::endl;
+	for (int i = 0; i < sp.materials.size(); i++)
+	{
+		float* a = sp.materials[i].ambiante;
+		float* d = sp.materials[i].diffuse;
+		float* s = sp.materials[i].specular;
+		Material* mat = new Material(Color(a[0], a[1], a[2]), Color(d[0], d[1], d[2]), Color(s[0], s[1], s[2]), sp.materials[i].si);
 
-	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < height; j++) {
-			
+		if (sp.materials[i].colorMapPath != "") {
+			const int length = sp.materials[i].colorMapPath.length();
+			char* char_array = new char[length + 1];
+			strcpy(char_array, sp.materials[i].colorMapPath.c_str());
+			mat->setColorMap(new Image(char_array));
+		}
 
+		if (sp.materials[i].normalMapPath != "") {
+			const int length = sp.materials[i].normalMapPath.length();
+			char* char_array = new char[length + 1];
+			strcpy(char_array, sp.materials[i].normalMapPath.c_str());
+			mat->setNormalMap(new Image(char_array));
+		}
+
+		mats.push_back(mat);
+	}
+
+	// Load entity
+	for (int i = 0; i < sp.entities.size(); i++)
+	{
+		std::string type = sp.entities[i].type;
+		Entity* entity;
+		if (type == "Plan") {
+			entity = new Plan();
+			scene.AddToScene(entity, mats[sp.entities[i].idMaterial], 0, 0, 0);
+		}
+
+		if (type == "Cube") {
+			entity = new Cube();
+			scene.AddToScene(entity, mats[sp.entities[i].idMaterial], 0, 0, 0);
+		}
+
+		if (type == "Sphere") {
+			entity = new Sphere();
+			scene.AddToScene(entity, mats[sp.entities[i].idMaterial], 0, 0, 0);
+		}
+
+		if (type == "Mesh") {
+			std::cout << "Mesh Loading ..." << std::endl;
+			dataMesh d = LoadMesh();
+			entity = new Mesh(d.v, d.n);
+			scene.AddToScene(entity, mats[sp.entities[i].idMaterial], 0, 0, 0);
+		}
+
+		entity->translate(sp.entities[i].position[0], sp.entities[i].position[1], sp.entities[i].position[2]);
+
+		entity->rotateX(sp.entities[i].angle[0]);
+		entity->rotateY(sp.entities[i].angle[1]);
+		entity->rotateZ(sp.entities[i].angle[2]);
+
+
+	}
+
+	for (int i = 0; i < sp.lights.size(); i++)
+	{
+		Ray4 rL(Vector4(sp.lights[i].position[0], sp.lights[i].position[1], sp.lights[i].position[2],1.0), Vector4(sp.lights[i].direction[0], sp.lights[i].direction[1], sp.lights[i].direction[2], 0.0f).normalized());
+		Light* l = new Light(rL, Color(sp.lights[i].color[0], sp.lights[i].color[1], sp.lights[i].color[2]), Color(sp.lights[i].specular[0], sp.lights[i].specular[1], sp.lights[i].specular[2]),Point);
+		scene.AddLightToScene(l);
+	}
+
+	return scene;
+}
+
+void drawPixel(Scene& scene, Camera& cam, int width, int height, std::vector<unsigned char*> arr, int begin, int end, bool shadow, bool aa)
+{
+	for (int i = begin; i < end; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
 			float x = (float)i / width;
 			float y = (float)j / height;
 
-			if ( j ==  0) {
-				std::cout << (float)(x*100.0f) << " %" << std::endl;
+			if (j == 0) {
+				std::cout << (float)(x * 100.0f) << " %" << std::endl;
 			}
-			
-			Ray4 r = cam.getRay(x, y);
-			Color c = scene.getPixelColorPhong(r,cam);
+
+
+			Color c;
+
+			if (!aa) {
+				Ray4 ray = cam.getRay(x, y);
+				c = scene.getPixelColorPhong(ray, cam, shadow);
+			}
+			else {
+
+				float r = 0.0f, g = 0.0f, b = 0.0f;
+				for (int i = 0; i < 4; i++)
+				{
+					Ray4 ray = cam.getRaySampling(x, y, 0.01f);
+					c = scene.getPixelColorPhong(ray, cam, shadow);
+					r += c.r;
+					g += c.g;
+					b += c.b;
+				}
+
+				c = Color(r / 4.0f, g / 4.0f, b / 4.0f);
+
+			}
 
 
 			arr[j * width + i][0] = c.r;
 			arr[j * width + i][1] = c.g;
 			arr[j * width + i][2] = c.b;
-
-			
 		}
-	}	
-	
+	}
+}
+
+
+int main(int argc, char* argv[])
+{
+	float* f = new float[16] {
+		1, 2, 3, 4,
+			1, 2, 3, 4,
+			1, 2, 3, 4,
+			1, 2, 3, 4
+	};
+
+	Matrix4x4 mat(f);
+
+	int argH = 150;
+	int argW = 150;
+	int argFov = 90;
+	bool shadow = true;
+	std::string input;
+	std::string name = "scene1.json";
+	input = "output.jpg";
+	char* path = new char[input.length() + 1];
+	char* sceneName = new char[name.length() + 1];
+	strcpy(path, input.c_str());
+	strcpy(sceneName, name.c_str());
+	bool aa = false;
+
+	for (int i = 0; i < argc; i++) {
+
+		if (std::strcmp(argv[i], "-h") == 0) {
+			argH = std::atoi(argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-w") == 0) {
+			argW = std::atoi(argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-f") == 0) {
+			argFov = std::atoi(argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-s") == 0) {
+			sceneName = (argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-ns") == 0) {
+			shadow = false;
+		}
+
+		if (std::strcmp(argv[i], "-o") == 0) {
+			path = (argv[i + 1]);
+		}
+
+		if (std::strcmp(argv[i], "-aa") == 0) {
+			aa = true;
+		}
+
+	}
+
+	Camera cam(argW, argH, 5, argFov, 0.1, 10000);
+	Image img(cam.getWidth(), cam.getHeight(), 3);
+	std::vector<unsigned char*> arr = img.getImage();
+	std::vector<Material*>  mats;
+	Scene scene = LoadScene(sceneName, cam, mats);
+
+	int width = img.getWidth();
+	int height = img.getHeight();
+
+	// debut du timer
+	auto start = std::chrono::system_clock::now();
+
+	// fonction qui fait le rendu
+	drawPixel(scene, cam, width, height, arr, 0, height, shadow, aa);
+
+	// fin du timer
 	auto end = std::chrono::system_clock::now();
 	std::chrono::duration<double> elapsed_seconds = end - start;
 	std::cout << elapsed_seconds.count() << std::endl;
 
-	
-	std::string input;
-	input = "outputt.png";
-	char* path = new char[input.length() + 1];
-	strcpy(path, input.c_str());
-
-
-
 	img.WriteImage(path);
-
-
 
 	return 0;
 }
-
 
 

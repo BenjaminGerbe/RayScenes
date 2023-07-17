@@ -521,4 +521,7 @@ float distance(Vector<N> a, Vector<N> b) {
     return std::sqrtf(d);
 }
 
+
+
 #endif
+

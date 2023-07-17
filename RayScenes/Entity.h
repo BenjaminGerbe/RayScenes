@@ -115,6 +115,8 @@ public:
 
 	Ray4 getRay(float x, float y)const;
 
+	Ray4 getRaySampling(float x, float y, float radius) const;
+
 };
 
 
@@ -214,20 +216,36 @@ class InfCylender : public Entity {
 
 };
 
+enum LightType {
+	Directional,
+	Point
+};
+
 class Light : public Entity
 {
 	Ray4 LightRay;
 	Color DiffuseColor;
 	Color SpecularColor;
+	LightType type;
+
 
 	public :
 
 	Light(Ray4 r, Color c, Color s) : DiffuseColor(c), SpecularColor(s){
 		LightRay = r;
+		type = Directional;
+	}
+
+	Light(Ray4 r, Color c, Color s,LightType t) : DiffuseColor(c), SpecularColor(s) {
+		LightRay = r;
+		type = t;
+	}
+
+	LightType getType() {
+		return type;
 	}
 
 	Light() {
-		
 
 		DiffuseColor = Color(255, 255, 255);
 		SpecularColor = Color(255, 255, 255);
@@ -241,6 +259,14 @@ class Light : public Entity
 		return DiffuseColor;
 	}
 
+	Vector4 getLightDirection(Vector4 point) {
+		if (type == Directional) {
+			return LightRay.getDirection().normalized();
+		}
+		else if (type == Point) {
+			return (LightRay.getOrigin()- point).normalized();
+		}
+	}
 
 	Color getSpecularColor() {
 		return SpecularColor;
@@ -261,7 +287,7 @@ class Scene {
 	};
 
 	Color getPixelColorLambert(Ray4 ray,Camera cam);
-	Color getPixelColorPhong(Ray4 ray,Camera cam);
+	Color getPixelColorPhong(Ray4 ray,Camera cam,bool shadow);
 
 	void AddToScene(Entity* ent, Material* mat, float x, float y, float z);
 
@@ -297,6 +323,7 @@ struct EntityParser {
 };
 
 struct LightParser {
+	float position[3];
 	float direction[3];
 	float color[3];
 	float specular[3];
