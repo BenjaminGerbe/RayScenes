@@ -6,7 +6,7 @@
 #include <chrono>
 #include "json_struct.h"
 #include <fstream>
-
+#include <algorithm>
 #define TINYOBJLOADER_IMPLEMENTATION 
 #include "tiny_obj_loader.h"
 
@@ -59,7 +59,7 @@ dataMesh LoadMesh() {
 					tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
 					tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
 					normals.push_back(Vector3(nx, ny, nz));
-				
+
 				}
 					
 				if (idx.texcoord_index >= 0) {
@@ -193,26 +193,77 @@ Scene LoadScene(char* scaneName,Camera& cam,std::vector<Material*>& mats) {
 		scene.AddLightToScene(l);
 	}
 
-
 	return scene;
 }
 
+void drawPixel(Scene& scene, Camera& cam, int width, int height, std::vector<unsigned char*> arr, int begin, int end, bool shadow, bool aa)
+{
+	for (int i = begin; i < end; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			float x = (float)i / width;
+			float y = (float)j / height;
+
+			if (j == 0) {
+				std::cout << (float)(x * 100.0f) << " %" << std::endl;
+			}
+
+
+			Color c;
+
+			if (!aa) {
+				Ray4 ray = cam.getRay(x, y);
+				c = scene.getPixelColorPhong(ray, cam, shadow);
+			}
+			else {
+
+				float r = 0.0f, g = 0.0f, b = 0.0f;
+				for (int i = 0; i < 4; i++)
+				{
+					Ray4 ray = cam.getRaySampling(x, y, 0.01f);
+					c = scene.getPixelColorPhong(ray, cam, shadow);
+					r += c.r;
+					g += c.g;
+					b += c.b;
+				}
+
+				c = Color(r / 4.0f, g / 4.0f, b / 4.0f);
+
+			}
+
+
+			arr[j * width + i][0] = c.r;
+			arr[j * width + i][1] = c.g;
+			arr[j * width + i][2] = c.b;
+		}
+	}
+}
+
+
 int main(int argc, char* argv[])
 {
+	float* f = new float[16] {
+		1, 2, 3, 4,
+			1, 2, 3, 4,
+			1, 2, 3, 4,
+			1, 2, 3, 4
+	};
 
-
+	Matrix4x4 mat(f);
 
 	int argH = 50;
 	int argW = 50;
 	int argFov = 90;
 	bool shadow = true;
 	std::string input;
-	std::string name = "scene0.json";
+	std::string name = "scene1.json";
 	input = "output.jpg";
 	char* path = new char[input.length() + 1];
 	char* sceneName = new char[name.length() + 1];
 	strcpy(path, input.c_str());
 	strcpy(sceneName, name.c_str());
+	bool aa = false;
 
 	for (int i = 0; i < argc; i++) {	
 	
@@ -240,6 +291,10 @@ int main(int argc, char* argv[])
 			path = (argv[i + 1]);
 		}
 
+		if (std::strcmp(argv[i], "-aa") == 0) {
+			aa = true;
+		}
+
 	}
 
 
@@ -248,46 +303,32 @@ int main(int argc, char* argv[])
 	Image img(cam.getWidth(), cam.getHeight(), 3);
 	std::vector<unsigned char*> arr = img.getImage();
 	std::vector<Material*>  mats;
-
 	Scene scene = LoadScene(sceneName,cam,mats);
+
 
 	int width = img.getWidth();
 	int height = img.getHeight();
 
+	// debut du timer
 	auto start = std::chrono::system_clock::now();
-	std::cout << cam.getTrans() << std::endl;
 
-	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < height; j++) {
-			
+	// fonction qui fait le rendu
+	drawPixel(scene,cam, width, height, arr, 0,height, shadow, aa);
 
-			float x = (float)i / width;
-			float y = (float)j / height;
-
-			if ( j ==  0) {
-				std::cout << (float)(x*100.0f) << " %" << std::endl;
-			}
-			
-			Ray4 r = cam.getRay(x, y);
-			Color c = scene.getPixelColorPhong(r,cam,shadow);
-
-
-			arr[j * width + i][0] = c.r;
-			arr[j * width + i][1] = c.g;
-			arr[j * width + i][2] = c.b;
-
-			
-		}
-	}	
 	
+	// fin du timer
 	auto end = std::chrono::system_clock::now();
 	std::chrono::duration<double> elapsed_seconds = end - start;
 	std::cout << elapsed_seconds.count() << std::endl;
 
+	
 	img.WriteImage(path);
 
 	return 0;
 }
+
+
+
 
 
 

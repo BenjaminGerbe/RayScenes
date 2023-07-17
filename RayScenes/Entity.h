@@ -75,6 +75,8 @@ public:
 
 	Camera(float W, float H, float F, float fov, float near, float far) : width(W), height(H),focal(F) {
 		
+		focal = F;
+
 		/*
 		fov = (fov * M_PI) / 180.0f;
 
@@ -114,6 +116,8 @@ public:
 	}
 
 	Ray4 getRay(float x, float y)const;
+
+	Ray4 getRaySampling(float x, float y, float radius) const;
 
 };
 
@@ -269,6 +273,7 @@ class Scene {
 	};
 
 	Color getPixelColorLambert(Ray4 ray, Camera cam,bool shadow);
+	float getDistanceToCamera(Ray4 ray, Camera cam);
 	Color getPixelColorPhong(Ray4 ray,Camera cam,bool shadow);
 
 	void AddToScene(Entity* ent, Material* mat, float x, float y, float z);
@@ -287,8 +292,6 @@ class Scene {
 	}
 
 };
-
-
 
 struct CameraParser {
 	float position[3];

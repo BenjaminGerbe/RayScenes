@@ -28,10 +28,7 @@ Ray4 Camera::getRay(float x, float y) const {
 	float ratio = width / height;
 
 	Vector3 origin( (((x * 2) - 1) * ratio ), ((y * 2) - 1 ), 0);
-	// Générer un décalage aléatoire pour le flou
 
-	Vector3 o(0, 0, -focal);
-	// Ajouter le décalage aléatoire à la direction du rayon
 	Vector3 v(origin.x, origin.y, -focal);
 	v = v.normalized();
 
@@ -39,6 +36,32 @@ Ray4 Camera::getRay(float x, float y) const {
 	Ray4 ray(r);
 
 	ray = localToGlobal(Ray4(r));
+	return ray;
+}
+
+Ray4 Camera::getRaySampling(float x, float y, float radius) const
+{
+	float ratio = width / height;
+
+	// Génération de décalage aléatoire
+	float randX = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+	float randY = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+	float randZ = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+
+	// Calcul de l'origine du rayon
+	Vector3 origin(((x * 2) - 1) * ratio, (y * 2) - 1, 0);
+	origin = origin + Vector3(randX, randY, 0);
+
+	// Calcul de la direction du rayon
+	Vector3 direction(origin.x, origin.y, -focal);
+	direction = direction.normalized();
+
+	// Création et retour du rayon
+	Ray r(origin, direction);
+	Ray4 ray(r);
+
+	ray = localToGlobal(ray);  // Conversion locale à globale si nécessaire
+
 	return ray;
 }
 
@@ -475,6 +498,41 @@ Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam,bool shadow) {
 }
 
 
+float Scene::getDistanceToCamera(Ray4 ray, Camera cam) {
+	Color src(1, 1, 1);
+
+
+	Vector4 impact;
+	Vector4 closest;
+	float depth = std::numeric_limits<float>::max();
+	bool Itr = false;
+
+	float r = 1;
+	float g = 1;
+	float b = 1;
+
+	float nMax = 0;
+	std::vector<Entity*> lstObject;
+
+	lstObject = std::vector<Entity*>(this->lstObject);
+
+
+	for (int i = 0; i < lstObject.size(); i++)
+	{
+		if (lstObject[i]->Intersect(ray, impact)) {
+			Itr = true;
+			float tmp = cam.globalToLocal(impact).getNorme();
+
+			if (tmp > depth) {
+				continue;
+			}
+
+			closest = Vector4(impact);
+		}
+	}
+
+	return cam.globalToLocal(closest).getNorme();
+}
 
 Color Scene::getPixelColorPhong(Ray4 ray, Camera cam,bool shadow) {
 	
@@ -752,8 +810,6 @@ Mesh::Mesh(std::vector<Vector3> v, std::vector<Vector3> normals, std::vector<Vec
 	
 }
 
-
-
 bool Mesh::Intersect(const Ray4& ray, Vector4& impact) const
 {
 	Ray4 r = globalToLocal(ray);
@@ -800,42 +856,4 @@ Ray4 Mesh::getNormal(const Vector4& impact, const Vector4& observator) const
 	Vector4 lo = globalToLocal(observator);
 
 	return localToGlobal(Vertex[intersected].getNormal(lp, lo));
-
-	/*
-	Vector4 lp = globalToLocal(impact);
-	Vector4 lo = globalToLocal(observator);
-
-	Ray4 r = (Ray4(lo, (lp-lo).normalized()));
-	Vector4 im;
-	Vector4 dir;
-
-
-	std::vector<Vector4> lstNormal;
-
-	for (int i = 0; i < Vertex.size(); i++)
-	{
-		if (Vertex[i].Intersect(r, im)) {
-			lstNormal.push_back(Vector4(localToGlobal(Vertex[i].getNormal(lp,lo).getDirection())));
-		}
-	}
-
-	if (lstNormal.size() <= 0) {
-		dir = Vector4(0, 0, 0,0);
-		return Ray4(impact, Vector4(0,0,0,0));
-	}
-
-	dir = lstNormal[0];
-	float distance = std::powf(lstNormal[0].x - observator[0], 2) + std::powf(lstNormal[0].y - observator[1], 2) + std::powf(lstNormal[0].z - observator[2], 2);
-	for (int i = 1; i < lstNormal.size(); i++)
-	{
-		float d = std::powf(lstNormal[i].x - observator[0], 2) + std::powf(lstNormal[i].y - observator[1], 2) + std::powf(lstNormal[i].z - observator[2], 2);
-		if (d <= distance) {
-			distance = d;
-			dir = lstNormal[i];
-		}
-	}
-
-
-	return Ray4(impact, dir);
-	*/
 }
