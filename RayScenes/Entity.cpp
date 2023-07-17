@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <omp.h>
 #include <utility>
-
+#include <iostream>
 
 Ray4 Camera::getRay(float x, float y) const
 {
@@ -15,9 +15,28 @@ Ray4 Camera::getRay(float x, float y) const
 	v = v.normalized();
 
 	Ray r(origin, v);
-
 	Ray4 ray(r);
 
+	ray = localToGlobal(Ray4(r));
+	return ray;
+}
+
+Ray4 Camera::getRaySampling(float x, float y,float radius) const
+{
+	float randX = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+	float randY = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+	float ratio = width / height;
+
+	Vector3  origin(((x * 2) - 1) * ratio, (y * 2) - 1, 0);
+	Vector3 v(origin.x, origin.y, -focal);
+	v = v.normalized();
+	
+	Vector3 shifted(origin.x + randX, origin.y + randY, 0);
+	v = v * focal;
+	Vector3 P = Vector3(shifted.x - v.x,shifted.y - v.y,shifted.z - v.z);
+	P = P.normalized();
+	Ray r(shifted, P);
+	Ray4 ray(r);
 
 	ray = localToGlobal(Ray4(r));
 	return ray;

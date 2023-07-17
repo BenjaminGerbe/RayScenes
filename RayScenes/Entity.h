@@ -115,6 +115,8 @@ public:
 
 	Ray4 getRay(float x, float y)const;
 
+	Ray4 getRaySampling(float x, float y, float radius)const;
+
 };
 
 

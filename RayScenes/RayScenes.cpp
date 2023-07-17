@@ -115,8 +115,8 @@ int main(int argc, char* argv[])
 	std::vector<Vector3> vert = d.v;
 	std::vector<Vector3> normals = d.n;
 
-	int argH = 45;
-	int argW = 45;
+	int argH = 150;
+	int argW = 150;
 	int argFov = 90;
 	char* sceneName;
 
@@ -194,8 +194,8 @@ int main(int argc, char* argv[])
 
 	
 	scene.AddToScene(dynamic_cast<Entity*>(new Plan()), basic, 0, 0, 0);
-	scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert,normals)), White, 0, 0, 0);
-	//scene.AddToScene(dynamic_cast<Entity*>(new Cube()), White, 0, 0, 0);
+	//scene.AddToScene(dynamic_cast<Entity*>(new Mesh(vert,normals)), White, 0, 0, 0);
+	scene.AddToScene(dynamic_cast<Entity*>(new Cube()), White, 0, 0, 0);
 	//scene.AddToScene(dynamic_cast<Entity*>(new Triangle(Vector3(-1,-1,5), Vector3(1, -1, 1),Vector3(-1, 1, 1))), basic, 0, 0, 0);
 
 	scene.getEntity(0)->rotateX(90 * (M_PI / 180.0f));
@@ -238,8 +238,19 @@ int main(int argc, char* argv[])
 			
 			Ray4 r = cam.getRay(x, y);
 			Color c = scene.getPixelColorPhong(r,cam);
+			float _r = c.r;
+			float _g = c.g;
+			float _b = c.b;
+			for (int i = 0; i < 4; i++)
+			{
+				Ray4 rs = cam.getRaySampling(x, y,0.02f);
+				Color tmp = scene.getPixelColorPhong(rs, cam);
+				_r += tmp.r;
+				_b += tmp.b;
+				_g += tmp.g;
+			}
 
-
+			c = Color(_r/4.0f,_g/4.0f,_b/4.0f);
 			arr[j * width + i][0] = c.r;
 			arr[j * width + i][1] = c.g;
 			arr[j * width + i][2] = c.b;
