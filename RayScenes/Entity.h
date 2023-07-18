@@ -259,12 +259,13 @@ class Light : public Entity
 		return DiffuseColor;
 	}
 
-	Vector4 getLightDirection(Vector4 point) {
+	Vector4 getLightDirection(Vector4 _point) {
+		Vector4 point = globalToLocal(_point);
 		if (type == Directional) {
-			return LightRay.getDirection().normalized();
+			return localToGlobal(LightRay.getDirection()).normalized();
 		}
 		else if (type == Point) {
-			return (LightRay.getOrigin()- point).normalized();
+			return localToGlobal(point - LightRay.getOrigin()).normalized();
 		}
 	}
 
@@ -327,6 +328,7 @@ struct LightParser {
 	float direction[3];
 	float color[3];
 	float specular[3];
+	std::string type;
 };
 
 struct MaterialParser {

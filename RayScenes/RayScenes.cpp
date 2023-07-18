@@ -200,8 +200,17 @@ Scene LoadScene(char* scaneName, Camera& cam, std::vector<Material*>& mats) {
 
 	for (int i = 0; i < sp.lights.size(); i++)
 	{
-		Ray4 rL(Vector4(sp.lights[i].position[0], sp.lights[i].position[1], sp.lights[i].position[2],1.0), Vector4(sp.lights[i].direction[0], sp.lights[i].direction[1], sp.lights[i].direction[2], 0.0f).normalized());
-		Light* l = new Light(rL, Color(sp.lights[i].color[0], sp.lights[i].color[1], sp.lights[i].color[2]), Color(sp.lights[i].specular[0], sp.lights[i].specular[1], sp.lights[i].specular[2]),Point);
+		Ray4 rL(Vector4(0,0,0,1.0), Vector4(sp.lights[i].direction[0], sp.lights[i].direction[1], sp.lights[i].direction[2], 0.0f).normalized());
+		Light* l;
+		if (sp.lights[i].type == "Pointer") {
+			 l = new Light(rL, Color(sp.lights[i].color[0], sp.lights[i].color[1], sp.lights[i].color[2]), Color(sp.lights[i].specular[0], sp.lights[i].specular[1], sp.lights[i].specular[2]), Point);
+		}
+		else {
+			l = new Light(rL, Color(sp.lights[i].color[0], sp.lights[i].color[1], sp.lights[i].color[2]), Color(sp.lights[i].specular[0], sp.lights[i].specular[1], sp.lights[i].specular[2]));
+		}
+		
+		
+		l->translate(sp.lights[i].position[0], sp.lights[i].position[1], sp.lights[i].position[2]);
 		scene.AddLightToScene(l);
 	}
 
@@ -264,8 +273,8 @@ int main(int argc, char* argv[])
 
 	Matrix4x4 mat(f);
 
-	int argH = 150;
-	int argW = 150;
+	int argH = 1080;
+	int argW = 1080;
 	int argFov = 90;
 	bool shadow = true;
 	std::string input;
@@ -275,7 +284,7 @@ int main(int argc, char* argv[])
 	char* sceneName = new char[name.length() + 1];
 	strcpy(path, input.c_str());
 	strcpy(sceneName, name.c_str());
-	bool aa = false;
+	bool aa = true;
 
 	for (int i = 0; i < argc; i++) {
 

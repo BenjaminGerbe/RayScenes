@@ -40,6 +40,6 @@
 JS_OBJ_EXT(CameraParser, position,angle,backgroundColor);
 JS_OBJ_EXT(EntityParser,type, position,angle,idMaterial,meshPath);
 JS_OBJ_EXT(MaterialParser,ambiante, diffuse,specular,si,colorMapPath,normalMapPath);
-JS_OBJ_EXT(LightParser,direction,color,specular);
+JS_OBJ_EXT(LightParser,position,direction,color,specular,type);
 JS_OBJ_EXT(SceneParser, camera, materials,entities,lights);
 

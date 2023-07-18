@@ -229,7 +229,8 @@ Vector4 Plan::getTextureCoordinates(const Vector4& p) const
 	if (x < 0)x += 1;
 	if (y < 0)y += 1;
 
-	return Vector4(x, y, 0,1.0);
+	Vector4 uv = Vector4(std::clamp(x, 0.0f, 1.0f), std::clamp(y, 0.0f, 1.0f), 0, 1.0);
+	return uv;
 }
 
 bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
@@ -303,11 +304,14 @@ Sphere::Sphere()
 
 Vector4 Sphere::getTextureCoordinates(const Vector4& p) const
 {
-	Vector4 posLocal = globalToLocal(p);
-	float u = 0.5 + atan2(posLocal.z, posLocal.x) / (2 * 3.1415926);
-	float v = 0.5 - asin(posLocal.y) / 3.1415926;
-
-	return Vector4(u, v,0.0,1.0);
+	Vector4 lp = globalToLocal(p);
+	float rho = std::sqrt(lp.dot(lp));
+	float theta = std::atan2(lp[1], lp[0]);
+	float sigma = std::acos(lp[2] / rho);
+	float x = -theta / (2 * M_PI) + 0.5;
+	float y = sigma / M_PI;
+	//std::cerr<<x<<","<<y<<std::endl;
+	return Vector4(x, y, 0,1.0f);
 }
 
 bool Sphere::Intersect(const Ray4& ray, Vector4& impact) const
@@ -545,12 +549,19 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam, bool shadow) {
 			for (int j = 0; j < lstLights.size(); j++)
 			{
 				Light light = *lstLights[j];
+				
+
+			
 				Vector4 L = -lstObject[i]->globalToLocal(light.getLightDirection(impact)).normalized();
+
 				NL = N.dot(L);
 				NL = std::clamp(NL, 0.0f, 1.0f);
 
-
 				if (shadow && isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
+
+				float dist = (impact - lstObject[i]->localToGlobal(Vector4(0, 0, 0, 1.0))).getNorme();
+
+				Color cNL = Color(dist, dist, dist) * 255.0f;
 
 				Vector4 R = (N * 2.0f * NL) - L;
 				Vector4 V = lstObject[i]->globalToLocal(cam.getPoistion() - impact).normalized();
@@ -560,6 +571,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam, bool shadow) {
 
 				Color temp = (cTexture * mat->getDiffuse() * NL * light.getDiffuseColor()) + specColor;
 				src = src + temp;
+				//src  = cNL;
 			}
 		}
 	}
