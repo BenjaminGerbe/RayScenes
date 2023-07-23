@@ -65,6 +65,33 @@ Ray4 Camera::getRaySampling(float x, float y, float radius) const
 	return ray;
 }
 
+Ray4 Camera::getRaySampling(float x, float y, float radius) const
+{
+	float ratio = width / height;
+
+	// Génération de décalage aléatoire
+	float randX = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+	float randY = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+	float randZ = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
+
+	// Calcul de l'origine du rayon
+	Vector3 origin(((x * 2) - 1) * ratio, (y * 2) - 1, 0);
+	origin = origin + Vector3(randX, randY, 0);
+
+	// Calcul de la direction du rayon
+	Vector3 direction(origin.x, origin.y, -focal);
+	direction = direction.normalized();
+
+	// Création et retour du rayon
+	Ray r(origin, direction);
+	Ray4 ray(r);
+
+	ray = localToGlobal(ray);  // Conversion locale à globale si nécessaire
+
+	return ray;
+}
+
+
 
 void Entity::translate(float x, float y, float z) {
 	trans.setAt(0, 3, trans.getAt(0, 3) + x);
@@ -75,12 +102,13 @@ void Entity::translate(float x, float y, float z) {
 }
 
 
-void Entity::scale(float f) {
+void Entity::scale(float x,float y,float z) {
 
 	Matrix4x4 scale;
-	scale.setAt(0, 0, f);
-	scale.setAt(1, 1, f);
-	scale.setAt(2, 2, f);
+
+	scale.setAt(0, 0, x);
+	scale.setAt(1, 1, y);
+	scale.setAt(2, 2, z);
 
 
 	trans = scale * trans;
@@ -90,6 +118,7 @@ void Entity::scale(float f) {
 void Entity::rotateX(float deg) {
 	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
+	deg = deg * (M_PI / 180.0f);
 	rot.setAt(1, 1, std::cosf(deg));
 	rot.setAt(1, 2, -std::sinf(deg));
 
@@ -104,6 +133,7 @@ void Entity::rotateX(float deg) {
 void Entity::rotateY(float deg) {
 	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
+	deg = deg * (M_PI / 180.0f);
 	rot.setAt(0, 0, std::cosf(deg));
 	rot.setAt(0, 2, std::sinf(deg));
 
@@ -120,6 +150,7 @@ void Entity::rotateY(float deg) {
 void Entity::rotateZ(float deg) {
 	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
+	deg = deg * (M_PI / 180.0f);
 	rot.setAt(0, 0, std::cosf(deg));
 	rot.setAt(0, 1, -std::sinf(deg));
 
@@ -149,7 +180,6 @@ Vector4 Entity::localToGlobal(const Vector4& v) const
 }
 Vector<4> Entity::globalToLocal(const Vector<4>& v) const
 {
-	
 	return this->trans * v;
 }
 
@@ -226,6 +256,8 @@ Vector4 Square::getTextureCoordinates(const Vector4& p) const
 {
 	Vector4 point = globalToLocal(p);
 	Vector4 uv((point.x + 1.f) / 2.f, (point.y + 1.f) / 2.f, 0,1.0);
+
+	uv = Vector4(std::clamp(uv.x, 0.0f, 1.0f), std::clamp(uv.y, 0.0f, 1.0f), 0, 1.0);
 	return uv;
 }
 
@@ -237,7 +269,8 @@ Vector4 Plan::getTextureCoordinates(const Vector4& p) const
 	if (x < 0)x += 1;
 	if (y < 0)y += 1;
 
-	return Vector4(x, y, 0,1.0);
+	Vector4 uv = Vector4(std::clamp(x, 0.0f, 1.0f), std::clamp(y, 0.0f, 1.0f), 0, 1.0);
+	return uv;
 }
 
 bool Plan::Intersect(const Ray4& ray, Vector4& impact) const
@@ -295,9 +328,13 @@ Ray4 Square::getNormal(const Vector4& impact, const Vector4& observator) const
 
 	Vector4 vec(0, 0, -1, 0);
 
+
+
+
 	if (p[2] < obs[2]) {
 		vec = -vec;
 	}
+
 
 	Ray4 r(impact, localToGlobal(vec));
 
@@ -311,11 +348,14 @@ Sphere::Sphere()
 
 Vector4 Sphere::getTextureCoordinates(const Vector4& p) const
 {
-	Vector4 posLocal = globalToLocal(p);
-	float u = 0.5 + atan2(posLocal.z, posLocal.x) / (2 * 3.1415926);
-	float v = 0.5 - asin(posLocal.y) / 3.1415926;
-
-	return Vector4(u, v,0.0,1.0);
+	Vector4 lp = globalToLocal(p);
+	float rho = std::sqrt(lp.dot(lp));
+	float theta = std::atan2(lp[1], lp[0]);
+	float sigma = std::acos(lp[2] / rho);
+	float x = -theta / (2 * M_PI) + 0.5;
+	float y = sigma / M_PI;
+	//std::cerr<<x<<","<<y<<std::endl;
+	return Vector4(x, y, 0,1.0f);
 }
 
 bool Sphere::Intersect(const Ray4& ray, Vector4& impact) const
@@ -363,21 +403,6 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 
 	vec = p;
 
-
-
-		Vector4 coord =getTextureCoordinates(impact);
-		Image* texture = mat->getNormalMap();
-		unsigned char* us = (*texture).getColor(coord.x * texture->getWidth(), coord.y * texture->getWidth());
-		Vector4 v(us[0]/255.0f, us[1] / 255.0f, us[2] / 255.0f, 0.0);
-
-		vec.setAt(0, vec.x * v.x);
-		vec.setAt(1, vec.y * v.y);
-		vec.setAt(2, vec.z * v.z);
-
-		vec = vec.normalized();
-
-
-
 	if (obs[0] * obs[0] + obs[1] * obs[1] + obs[2] * obs[2] <= 1) {
 		vec = -vec;
 	}
@@ -385,8 +410,6 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 	vec.setAt(3, 0);
 	vec = localToGlobal(vec);
 	vec = vec.normalized();
-
-
 
 	Ray4 r(impact, vec);
 	return r;
@@ -469,7 +492,7 @@ Color Scene:: getPixelColorLambert(Ray4 ray,Camera cam,bool shadow) {
 			for (int j = 0; j < lstLights.size(); j++)
 			{
 				Light light = *lstLights[j];
-				Vector4 L = -lstObject[i]->globalToLocal(light.getRay().getDirection()).normalized();
+				Vector4 L = -lstObject[i]->globalToLocal(light.getLightDirection(impact)).normalized();
 				NL += N.dot(L);
 				NL = std::clamp(NL, 0.0f, 1.0f);
 
@@ -534,8 +557,9 @@ float Scene::getDistanceToCamera(Ray4 ray, Camera cam) {
 	return cam.globalToLocal(closest).getNorme();
 }
 
-Color Scene::getPixelColorPhong(Ray4 ray, Camera cam,bool shadow) {
-	
+
+Color Scene::getPixelColorPhong(Ray4 ray, Camera cam, bool shadow) {
+
 	Color src(1, 1, 1);
 
 
@@ -552,7 +576,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam,bool shadow) {
 
 	lstObject = std::vector<Entity*>(this->lstObject);
 
-	
+
 	for (int i = 0; i < lstObject.size(); i++)
 	{
 		if (lstObject[i]->Intersect(ray, impact)) {
@@ -567,48 +591,58 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam,bool shadow) {
 
 			float NL = 0;
 			Vector4 N = lstObject[i]->globalToLocal(lstObject[i]->getNormal(impact, cam.getPoistion()).getDirection()).normalized();
-			Color cN(N.x*255.0f, N.y * 255.0f, N.z * 255.0f);
+			Color cN(N.x * 255.0f, N.y * 255.0f, N.z * 255.0f);
 			Material* mat = lstObject[i]->GetMat();
 			depth = tmp;
 
+			// NormalMap
+			Vector4 coordNormal = lstObject[i]->getTextureCoordinates(impact);
+			Image* normal = mat->getNormalMap();
+			unsigned char* nor = (*normal).getColor(coordNormal.x * normal->getWidth(), coordNormal.y * normal->getWidth());
+			Vector4 normalVec(nor[0]/255.0f, nor[1]/255.0f, nor[2]/255.0f,0.0);
 			
-
+		
+			// TextureMap
 			Vector4 coord = lstObject[i]->getTextureCoordinates(impact);
 			Image* texture = mat->getColorMap();
 			unsigned char* us = (*texture).getColor(coord.x * texture->getWidth(), coord.y * texture->getWidth());
 			Color cTexture(us[0], us[1], us[2]);
 
 
-			Image* rougNessTexture = mat->getRoughnessMap();
-			unsigned char* rg = (*rougNessTexture).getColor(coord.x *(rougNessTexture->getWidth()-1), coord.y *( rougNessTexture->getHeight()-1));
-			Color roughTexture(rg[0], rg[1], rg[2]);
-
-			src = mat->getAmbiante() * cTexture; 
+			src = mat->getAmbiante() * cTexture;
 
 			for (int j = 0; j < lstLights.size(); j++)
 			{
 				Light light = *lstLights[j];
-				Vector4 L = -lstObject[i]->globalToLocal(light.getRay().getDirection()).normalized();
+				
+
+			
+				Vector4 L = -lstObject[i]->globalToLocal(light.getLightDirection(impact)).normalized();
+
 				NL = N.dot(L);
 				NL = std::clamp(NL, 0.0f, 1.0f);
 
-
 				if (shadow && isOnShadow(impact, *lstLights[j], lstObject[i])) NL = 0;
+
+
+				float dist = (impact - lstObject[i]->localToGlobal(Vector4(0, 0, 0, 1.0))).getNorme();
+
+				Color cNL = Color(dist, dist, dist) * 255.0f;
+
 
 				Vector4 R = (N * 2.0f * NL) - L;
 				Vector4 V = lstObject[i]->globalToLocal(cam.getPoistion() - impact).normalized();
 				float specular = pow(R.dot(V), mat->getShininess());
 
-				Color specColor = mat->getSpeculaire() * specular * light.getSpecularColor() * roughTexture;
-
+				Color specColor = mat->getSpeculaire() * specular * light.getSpecularColor();
 
 				Color temp = (cTexture * mat->getDiffuse() * NL * light.getDiffuseColor()) + specColor;
 				src = src + temp;
-
+				//src  = cNL;
 			}
 		}
 	}
-	
+
 
 
 	if (!Itr) {
@@ -619,17 +653,32 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam,bool shadow) {
 }
 
 
-
 bool Scene::isOnShadow(Vector4 point,Light l, Entity* ent) {
 	bool result = false;
 	
 	for (int i = 0; i < lstObject.size(); i++)
 	{
 		if (ent == lstObject[i]) continue;
-		Ray4 r(point,-l.getRay().getDirection());
-		Vector4 vec;
-		if (lstObject[i]->Intersect(r, vec)) {
-			result = true;
+
+		if (l.getType() == Directional) {
+			Ray4 r(point, -l.getLightDirection(point));
+			Vector4 vec;
+			if (lstObject[i]->Intersect(r, vec)) {
+				result = true;
+			}
+		}
+		else if (l.getType() == Point) {
+			
+			Ray4 r(point, -l.getLightDirection(point));
+
+			Vector4 vec;
+			if (lstObject[i]->Intersect(r, vec)) {
+				if ((vec - point).getNorme() <= (l.getRay().getOrigin() - point).getNorme()) {
+					result = true;
+				}
+				
+			}
+
 		}
 		
 	}

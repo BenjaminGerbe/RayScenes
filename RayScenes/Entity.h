@@ -27,7 +27,7 @@ class Entity {
 	public:
 
 	void translate(float x, float y, float z);
-	void scale(float f);
+	void scale(float x,float y,float z);
 	void rotateX(float deg);
 	void rotateY(float deg);
 	void rotateZ(float deg);
@@ -226,20 +226,36 @@ class InfCylender : public Entity {
 
 };
 
+enum LightType {
+	Directional,
+	Point
+};
+
 class Light : public Entity
 {
 	Ray4 LightRay;
 	Color DiffuseColor;
 	Color SpecularColor;
+	LightType type;
+
 
 	public :
 
 	Light(Ray4 r, Color c, Color s) : DiffuseColor(c), SpecularColor(s){
 		LightRay = r;
+		type = Directional;
+	}
+
+	Light(Ray4 r, Color c, Color s,LightType t) : DiffuseColor(c), SpecularColor(s) {
+		LightRay = r;
+		type = t;
+	}
+
+	LightType getType() {
+		return type;
 	}
 
 	Light() {
-		
 
 		DiffuseColor = Color(255, 255, 255);
 		SpecularColor = Color(255, 255, 255);
@@ -253,6 +269,15 @@ class Light : public Entity
 		return DiffuseColor;
 	}
 
+	Vector4 getLightDirection(Vector4 _point) {
+		Vector4 point = globalToLocal(_point);
+		if (type == Directional) {
+			return localToGlobal(LightRay.getDirection()).normalized();
+		}
+		else if (type == Point) {
+			return localToGlobal(point - LightRay.getOrigin()).normalized();
+		}
+	}
 
 	Color getSpecularColor() {
 		return SpecularColor;
@@ -274,6 +299,7 @@ class Scene {
 
 	Color getPixelColorLambert(Ray4 ray, Camera cam,bool shadow);
 	float getDistanceToCamera(Ray4 ray, Camera cam);
+
 	Color getPixelColorPhong(Ray4 ray,Camera cam,bool shadow);
 
 	void AddToScene(Entity* ent, Material* mat, float x, float y, float z);
@@ -303,14 +329,17 @@ struct EntityParser {
 	std::string type;
 	float position[3];
 	float angle[3];
+	float scale[3];
 	int idMaterial;
 	std::string meshPath;
 };
 
 struct LightParser {
+	float position[3];
 	float direction[3];
 	float color[3];
 	float specular[3];
+	std::string type;
 };
 
 struct MaterialParser {
