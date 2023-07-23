@@ -25,9 +25,9 @@ struct dataMesh {
 	std::vector<Vector3> v;
 };
 
-dataMesh LoadMesh() {
+dataMesh LoadMesh(std::string path) {
 
-	if (!reader.ParseFromFile(inputfile, reader_config)) {
+	if (!reader.ParseFromFile(path, reader_config)) {
 		if (!reader.Error().empty()) {
 			std::cerr << "TinyObjReader: " << reader.Error();
 		}
@@ -76,35 +76,6 @@ dataMesh LoadMesh() {
 	return d;
 }
 
-
-void foo() {
-	Vector4 v1(0, 0, 0, 0);
-	Vector4 v2(0, 0, 0, 0);
-	Ray4 r(v1,v2);
-}
-
-
-
-void ReadJson() {
-	std::string pretty_json;
-
-	std::ifstream myfile("scene0.json");
-	if (myfile.is_open())
-	{
-		std::stringstream buffer;
-		buffer << myfile.rdbuf(); // Lire tout le contenu du fichier dans le flux
-
-		pretty_json = buffer.str(); // Convertir le flux en std::string
-
-		std::cout << pretty_json << std::endl; // Afficher le contenu du fichier
-
-		myfile.close();
-	}
-
-	JS::ParseContext context(pretty_json);
-	SceneParser sp2;
-	context.parseTo(sp2);
-}
 
 Scene LoadScene(char* scaneName, Camera& cam, std::vector<Material*>& mats) {
 	std::string pretty_json;
@@ -184,8 +155,18 @@ Scene LoadScene(char* scaneName, Camera& cam, std::vector<Material*>& mats) {
 
 		if (type == "Mesh") {
 			std::cout << "Mesh Loading ..." << std::endl;
-			dataMesh d = LoadMesh();
+			dataMesh d = LoadMesh(sp.entities[i].meshPath);
 			entity = new Mesh(d.v, d.n);
+			scene.AddToScene(entity, mats[sp.entities[i].idMaterial], 0, 0, 0);
+		}
+
+		if (type == "Square") {
+			entity = new Square();
+			scene.AddToScene(entity, mats[sp.entities[i].idMaterial], 0, 0, 0);
+		}
+
+		if (type == "InfCylender") {
+			entity = new InfCylender();
 			scene.AddToScene(entity, mats[sp.entities[i].idMaterial], 0, 0, 0);
 		}
 
@@ -195,6 +176,7 @@ Scene LoadScene(char* scaneName, Camera& cam, std::vector<Material*>& mats) {
 		entity->rotateY(sp.entities[i].angle[1]);
 		entity->rotateZ(sp.entities[i].angle[2]);
 
+		entity->scale(sp.entities[i].scale[0], sp.entities[i].scale[1], sp.entities[i].scale[2]);
 
 	}
 
@@ -217,50 +199,6 @@ Scene LoadScene(char* scaneName, Camera& cam, std::vector<Material*>& mats) {
 	return scene;
 }
 
-void drawPixel(Scene& scene, Camera& cam, int width, int height, std::vector<unsigned char*> arr, int begin, int end, bool shadow, bool aa)
-{
-	for (int i = begin; i < end; i++)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			float x = (float)i / width;
-			float y = (float)j / height;
-
-			if (j == 0) {
-				std::cout << (float)(x * 100.0f) << " %" << std::endl;
-			}
-
-
-			Color c;
-
-			if (!aa) {
-				Ray4 ray = cam.getRay(x, y);
-				c = scene.getPixelColorPhong(ray, cam, shadow);
-			}
-			else {
-
-				float r = 0.0f, g = 0.0f, b = 0.0f;
-				for (int i = 0; i < 4; i++)
-				{
-					Ray4 ray = cam.getRaySampling(x, y, 0.01f);
-					c = scene.getPixelColorPhong(ray, cam, shadow);
-					r += c.r;
-					g += c.g;
-					b += c.b;
-				}
-
-				c = Color(r / 4.0f, g / 4.0f, b / 4.0f);
-
-			}
-
-
-			arr[j * width + i][0] = c.r;
-			arr[j * width + i][1] = c.g;
-			arr[j * width + i][2] = c.b;
-		}
-	}
-}
-
 
 int main(int argc, char* argv[])
 {
@@ -273,8 +211,8 @@ int main(int argc, char* argv[])
 
 	Matrix4x4 mat(f);
 
-	int argH = 1080;
-	int argW = 1080;
+	int argH = 300;
+	int argW = 500;
 	int argFov = 90;
 	bool shadow = true;
 	std::string input;
@@ -284,7 +222,9 @@ int main(int argc, char* argv[])
 	char* sceneName = new char[name.length() + 1];
 	strcpy(path, input.c_str());
 	strcpy(sceneName, name.c_str());
-	bool aa = true;
+	bool aa = false;
+
+	
 
 	for (int i = 0; i < argc; i++) {
 
@@ -331,7 +271,46 @@ int main(int argc, char* argv[])
 	auto start = std::chrono::system_clock::now();
 
 	// fonction qui fait le rendu
-	drawPixel(scene, cam, width, height, arr, 0, height, shadow, aa);
+	for (int i = 0; i < width; i++)
+	{
+		for (int j = 0; j < height; j++)
+		{
+			float x = (float)i / width;
+			float y = (float)j / height;
+
+			if (j == 0) {
+				std::cout << (float)(x * 100.0f) << " %" << std::endl;
+			}
+
+
+			Color c;
+
+			if (!aa) {
+				Ray4 ray = cam.getRay(x, y);
+				c = scene.getPixelColorPhong(ray, cam, shadow);
+			}
+			else {
+
+				float r = 0.0f, g = 0.0f, b = 0.0f;
+				for (int i = 0; i < 4; i++)
+				{
+					Ray4 ray = cam.getRaySampling(x, y, 0.01f);
+					c = scene.getPixelColorPhong(ray, cam, shadow);
+					r += c.r;
+					g += c.g;
+					b += c.b;
+				}
+
+				c = Color(r / 4.0f, g / 4.0f, b / 4.0f);
+
+			}
+
+
+			arr[j * width + i][0] = c.r;
+			arr[j * width + i][1] = c.g;
+			arr[j * width + i][2] = c.b;
+		}
+	}
 
 	// fin du timer
 	auto end = std::chrono::system_clock::now();

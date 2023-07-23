@@ -1,0 +1,251 @@
+{
+  "camera": {
+    "position": [
+      0,
+      5,
+      -25
+    ],
+    "angle": [
+      -20,
+      10,
+      0
+    ],
+    "backgroundColor": [
+      32.0,
+      164.0,
+      196.0
+    ]
+  },
+  "materials": [
+    {
+      "ambiante": [
+        60,
+        60,
+        60
+      ],
+      "diffuse": [
+        255,
+        255,
+        255
+      ],
+      "specular": [
+        200,
+        200,
+        200
+      ],
+      "si": 1,
+      "colorMapPath": "Materials/Floor/color.jpg",
+      "normalMapPath": "Materials/Floor/normal.jpg"
+    },
+    {
+      "ambiante": [
+        60,
+        60,
+        60
+      ],
+      "diffuse": [
+        255,
+        255,
+        255
+      ],
+      "specular": [
+        255,
+        255,
+        255
+      ],
+      "si": 50,
+      "colorMapPath": "",
+      "normalMapPath": ""
+    },
+    {
+      "ambiante": [
+        100,
+        100,
+        100
+      ],
+      "diffuse": [
+        255,
+        255,
+        255
+      ],
+      "specular": [
+        255,
+        255,
+        255
+      ],
+      "si": 1500,
+      "colorMapPath": "Materials/texture_2checker.png",
+      "normalMapPath": "Materials/normal.jpg"
+    }
+  ],
+  "entities": [
+    {
+      "type": "Plan",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "angle": [
+        -90,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "idMaterial": 0,
+      "meshPath": ""
+    },
+    {
+      "type": "Cube",
+      "position": [
+        -8,
+        1,
+        10
+      ],
+      "angle": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "idMaterial": 2,
+      "meshPath": ""
+    },
+    {
+      "type": "Sphere",
+      "position": [
+        -4,
+        1,
+        10
+      ],
+      "angle": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "idMaterial": 0,
+      "meshPath": ""
+    },
+    {
+      "type": "Square",
+      "position": [
+        0,
+        1,
+        10
+      ],
+      "angle": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "idMaterial": 1,
+      "meshPath": ""
+    },
+     {
+      "type": "InfCylender",
+      "position": [
+        -12,
+        1,
+        10
+      ],
+      "angle": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "idMaterial": 1,
+      "meshPath": ""
+    },
+    {
+      "type": "Mesh",
+      "position": [
+        6,
+        1,
+        10
+      ],
+      "angle": [
+        180,
+        75,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "idMaterial": 1,
+      "meshPath": "Chess_Knights.obj"
+    }
+  ],
+ "lights": [
+    {
+      "position":[
+        0,
+        5,
+        5
+      ],
+      "direction": [
+        1,
+        1,
+        -1
+      ],
+      "color": [
+        100,
+        150,
+        255
+      ],
+      "specular": [
+        10,
+        100,
+        150
+      ],
+      "type": "Pointer"
+    },
+    {
+      "position":[
+        10,
+        1,
+        4
+      ],
+      "direction": [
+        1,
+        1,
+        -1
+      ],
+      "color": [
+        150,
+        150,
+        50
+      ],
+      "specular": [
+        100,
+        100,
+        100
+      ],
+      "type": "Pointer"
+    }
+  ]
+}

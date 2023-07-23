@@ -27,7 +27,7 @@ class Entity {
 	public:
 
 	void translate(float x, float y, float z);
-	void scale(float f);
+	void scale(float x,float y,float z);
 	void rotateX(float deg);
 	void rotateY(float deg);
 	void rotateZ(float deg);
@@ -319,6 +319,7 @@ struct EntityParser {
 	std::string type;
 	float position[3];
 	float angle[3];
+	float scale[3];
 	int idMaterial;
 	std::string meshPath;
 };

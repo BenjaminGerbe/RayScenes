@@ -60,13 +60,13 @@ void Entity::translate(float x, float y, float z) {
 }
 
 
-void Entity::scale(float f) {
+void Entity::scale(float x,float y,float z) {
 
 	Matrix4x4 scale;
 
-	scale.setAt(0, 0, f);
-	scale.setAt(1, 1, f);
-	scale.setAt(2, 2, f);
+	scale.setAt(0, 0, x);
+	scale.setAt(1, 1, y);
+	scale.setAt(2, 2, z);
 
 
 	trans = scale * trans;
@@ -135,7 +135,6 @@ Vector4 Entity::localToGlobal(const Vector4& v) const
 }
 Vector<4> Entity::globalToLocal(const Vector<4>& v) const
 {
-	
 	return this->trans * v;
 }
 
@@ -288,9 +287,13 @@ Ray4 Square::getNormal(const Vector4& impact, const Vector4& observator) const
 
 	Vector4 vec(0, 0, -1, 0);
 
+
+
+
 	if (p[2] < obs[2]) {
 		vec = -vec;
 	}
+
 
 	Ray4 r(impact, localToGlobal(vec));
 
@@ -359,21 +362,6 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 
 	vec = p;
 
-
-
-		Vector4 coord =getTextureCoordinates(impact);
-		Image* texture = mat->getNormalMap();
-		unsigned char* us = (*texture).getColor(coord.x * texture->getWidth(), coord.y * texture->getWidth());
-		Vector4 v(us[0]/255.0f, us[1] / 255.0f, us[2] / 255.0f, 0.0);
-
-		vec.setAt(0, vec.x * v.x);
-		vec.setAt(1, vec.y * v.y);
-		vec.setAt(2, vec.z * v.z);
-
-		vec = vec.normalized();
-
-
-
 	if (obs[0] * obs[0] + obs[1] * obs[1] + obs[2] * obs[2] <= 1) {
 		vec = -vec;
 	}
@@ -381,8 +369,6 @@ Ray4 Sphere::getNormal(const Vector4& impact, const Vector4& observator) const
 	vec.setAt(3, 0);
 	vec = localToGlobal(vec);
 	vec = vec.normalized();
-
-
 
 	Ray4 r(impact, vec);
 	return r;
@@ -532,17 +518,19 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam, bool shadow) {
 			Material* mat = lstObject[i]->GetMat();
 			depth = tmp;
 
-
-
+			// NormalMap
+			Vector4 coordNormal = lstObject[i]->getTextureCoordinates(impact);
+			Image* normal = mat->getNormalMap();
+			unsigned char* nor = (*normal).getColor(coordNormal.x * normal->getWidth(), coordNormal.y * normal->getWidth());
+			Vector4 normalVec(nor[0]/255.0f, nor[1]/255.0f, nor[2]/255.0f,0.0);
+			
+		
+			// TextureMap
 			Vector4 coord = lstObject[i]->getTextureCoordinates(impact);
 			Image* texture = mat->getColorMap();
 			unsigned char* us = (*texture).getColor(coord.x * texture->getWidth(), coord.y * texture->getWidth());
 			Color cTexture(us[0], us[1], us[2]);
 
-
-			Image* rougNessTexture = mat->getRoughnessMap();
-			unsigned char* rg = (*rougNessTexture).getColor(coord.x * (rougNessTexture->getWidth() - 1), coord.y * (rougNessTexture->getHeight() - 1));
-			Color roughTexture(rg[0], rg[1], rg[2]);
 
 			src = mat->getAmbiante() * cTexture;
 
@@ -567,7 +555,7 @@ Color Scene::getPixelColorPhong(Ray4 ray, Camera cam, bool shadow) {
 				Vector4 V = lstObject[i]->globalToLocal(cam.getPoistion() - impact).normalized();
 				float specular = pow(R.dot(V), mat->getShininess());
 
-				Color specColor = mat->getSpeculaire() * specular * light.getSpecularColor() * roughTexture;
+				Color specColor = mat->getSpeculaire() * specular * light.getSpecularColor();
 
 				Color temp = (cTexture * mat->getDiffuse() * NL * light.getDiffuseColor()) + specColor;
 				src = src + temp;
