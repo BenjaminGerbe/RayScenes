@@ -90,7 +90,6 @@ void Entity::scale(float x,float y,float z) {
 }
 
 void Entity::rotateX(float deg) {
-	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
 	deg = deg * (M_PI / 180.0f);
 	rot.setAt(1, 1, std::cosf(deg));
@@ -105,7 +104,7 @@ void Entity::rotateX(float deg) {
 }
 
 void Entity::rotateY(float deg) {
-	deg *= (M_PI / 180.0f);
+
 	Matrix4x4 rot;
 	deg = deg * (M_PI / 180.0f);
 	rot.setAt(0, 0, std::cosf(deg));
@@ -122,7 +121,6 @@ void Entity::rotateY(float deg) {
 
 
 void Entity::rotateZ(float deg) {
-	deg *= (M_PI / 180.0f);
 	Matrix4x4 rot;
 	deg = deg * (M_PI / 180.0f);
 	rot.setAt(0, 0, std::cosf(deg));
