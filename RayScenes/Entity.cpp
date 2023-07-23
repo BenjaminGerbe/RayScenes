@@ -65,32 +65,6 @@ Ray4 Camera::getRaySampling(float x, float y, float radius) const
 	return ray;
 }
 
-Ray4 Camera::getRaySampling(float x, float y, float radius) const
-{
-	float ratio = width / height;
-
-	// Génération de décalage aléatoire
-	float randX = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
-	float randY = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
-	float randZ = ((static_cast<double>(std::rand()) / RAND_MAX) - 0.5f) * radius;
-
-	// Calcul de l'origine du rayon
-	Vector3 origin(((x * 2) - 1) * ratio, (y * 2) - 1, 0);
-	origin = origin + Vector3(randX, randY, 0);
-
-	// Calcul de la direction du rayon
-	Vector3 direction(origin.x, origin.y, -focal);
-	direction = direction.normalized();
-
-	// Création et retour du rayon
-	Ray r(origin, direction);
-	Ray4 ray(r);
-
-	ray = localToGlobal(ray);  // Conversion locale à globale si nécessaire
-
-	return ray;
-}
-
 
 
 void Entity::translate(float x, float y, float z) {
