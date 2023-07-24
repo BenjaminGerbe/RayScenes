@@ -223,8 +223,7 @@ int main(int argc, char* argv[])
 	strcpy(path, input.c_str());
 	strcpy(sceneName, name.c_str());
 	bool aa = false;
-
-	
+	float sample = 0.01f;
 
 	for (int i = 0; i < argc; i++) {
 
@@ -254,9 +253,13 @@ int main(int argc, char* argv[])
 
 		if (std::strcmp(argv[i], "-aa") == 0) {
 			aa = true;
+			sample = std::atoi(argv[i + 1]) / 1000.0f;
+			std::cout << sample << std::endl;
 		}
 
 	}
+
+
 
 	Camera cam(argW, argH, 5, argFov, 0.1, 10000);
 	Image img(cam.getWidth(), cam.getHeight(), 3);
@@ -294,7 +297,7 @@ int main(int argc, char* argv[])
 				float r = 0.0f, g = 0.0f, b = 0.0f;
 				for (int i = 0; i < 4; i++)
 				{
-					Ray4 ray = cam.getRaySampling(x, y, 0.01f);
+					Ray4 ray = cam.getRaySampling(x, y, sample);
 					c = scene.getPixelColorPhong(ray, cam, shadow);
 					r += c.r;
 					g += c.g;

@@ -34,8 +34,6 @@
 
 
 
-
-
 #include "Entity.h"
 JS_OBJ_EXT(CameraParser, position,angle,backgroundColor);
 JS_OBJ_EXT(EntityParser,type, position,angle,scale,idMaterial,meshPath);
